@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../dragonMintingNFT/DragonMintingNFT.sol";
 import "../dragonRentalNFT/DragonRentalNFT.sol";
 
 import "../chainlink/IVRFv2Consumer.sol";
+import "../utils/DragonAttributesDeterminer.sol";
 
 contract DragonBreedingNFT {
-    DragonMintingNFT private dragonMintingNFT;
     DragonRentalNFT private dragonRentalNFT;
     IVRFv2Consumer private vrfConsumer;
+    DragonAttributesDeterminer private dragonAttributesDeterminer;
 
     // 드래곤 교배 수수료
     uint256 public constant BREEDING_FEE = 0.01 ether;
@@ -23,8 +23,8 @@ contract DragonBreedingNFT {
     event DragonBred(uint256 _fatherTokenId, uint256 _matherTokenId, uint256 _childTokenId);
     event RentedDragonBred(uint256 indexed myDragonId, uint256 indexed rentedDragonId);
 
-    constructor(address _dragonMintingNFT, address _dragonRentalNFT, address _vrfConsumer) {
-        dragonMintingNFT = DragonMintingNFT(_dragonMintingNFT);
+    constructor(address _dragonAttributesDeterminer, address _dragonRentalNFT, address _vrfConsumer) {
+        dragonAttributesDeterminer = DragonAttributesDeterminer(dragonAttributesDeterminer);
         dragonRentalNFT = DragonRentalNFT(_dragonRentalNFT);
         vrfConsumer = IVRFv2Consumer(_vrfConsumer);
     }
