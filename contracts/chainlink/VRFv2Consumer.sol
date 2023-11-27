@@ -1,21 +1,52 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+// * chainlink VRF
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 
-import "../dragonBreedingNFT/DragonBreedingNFT.sol";
+// * libraries
+import "../dragonNFT/library/DragonNFTLib.sol";
+import "../dragonBreed/library/DragonBreedLib.sol";
 
-contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner, DragonBreedingNFT {
-    event RequestSent(uint256 requestId, uint32 numWords);
-    event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+// * interfaces
+import "../dragonNFT/interface/IDragonNFT.sol";
+import "../dragonRental/interface/IDragonRental.sol";
+import "../dragonBreed/interface/IDragonBreed.sol";
 
-    enum RequestPurpose { 
+contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
+    IDragonNFT private dragonNft;
+    IDragonRental private dragonRental;
+    IDragonBreed private dragonBreed;
+
+    VRFCoordinatorV2Interface COORDINATOR;
+
+    // Chainlink VRF 구독 ID
+    uint64 immutable s_subscriptionId;
+
+    // 특정 Chainlink VRF 노드의 고유 식별자
+    bytes32 constant keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+
+    // 콜백 함수 가스 한도
+    uint32 callbackGasLimit = 300000;
+
+    // Request Confirm 횟수 -> 높일 시 더 안정적으로 랜덤값을 가져오지만 속도가 오래걸림 평균 - 3
+    uint16 requestConfirmations = 3;
+
+    // 요청할 랜덤 단어 수
+    uint32 numWords = 4;
+
+    // 드래곤 발행 수수료
+    uint256 public constant NFT_MINT_FEE = 0.01 ether;
+
+    // 요청 타입 (Mint, Breed)
+    enum RequestPurpose {
         MINTING,
         BREEDING
     }
 
+    // request 상태 구조체
     struct RequestStatus {
         bool fulfilled;
         bool exists;
@@ -24,63 +55,55 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner, DragonBreedingNFT {
         uint256[] randomWords;
     }
 
-    struct BreedingRequest {
+    // 드래곤 교배에 사용할 부모 드래곤 tokenId 구조체
+    struct DragonBreedingPair {
         uint256 parent1TokenId;
         uint256 parent2TokenId;
     }
 
-    mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+    // requestId에 대한 상태 저장 매핑
+    mapping(uint256 => RequestStatus) public s_requests;
 
-    mapping(uint256 => BreedingRequest) public breedingRequests;
+    // Request Id에 연결된 부모 드래곤 tokenId
+    mapping(uint256 => DragonBreedingPair) public breedingRequests;
 
-    VRFCoordinatorV2Interface COORDINATOR;
-
-    // subscription ID.
-    uint64 s_subscriptionId;
-
-    // past requests Id.
-    uint256[] public requestIds;
-    uint256 public lastRequestId;
-
-    bytes32 keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
-
-    uint32 callbackGasLimit = 300000;
-
-    uint16 requestConfirmations = 3;
-
-    uint32 numWords = 4;
+    event RequestSent(uint256 requestId, uint32 numWords);
+    event RequestFulfilled(uint256 requestId, uint256[] randomWords);
 
     /**
-     * HARDCODED FOR SEPOLIA
-     * COORDINATOR: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
+     * HARDCODED FOR SEPOLIA COORDINATOR: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
      */
-    constructor(uint64 subscriptionId, uint8 _maxLevel, uint32[] memory _xpToLevelUp) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) DragonBreedingNFT(_maxLevel, _xpToLevelUp) {
+    constructor(uint64 subscriptionId, address _dragonNft, address _dragonRental, address _dragonBreed) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) {
         COORDINATOR = VRFCoordinatorV2Interface(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625);
         s_subscriptionId = subscriptionId;
+        dragonNft = IDragonNFT(_dragonNft);
+        dragonRental = IDragonRental(_dragonRental);
+        dragonBreed = IDragonBreed(_dragonBreed);
     }
 
-    // 신규 드래곤 생성 함수
+    // 드래곤을 생성하는 함수입니다.
     function mintNewDragon() external payable returns (uint256 requestId) {
-        require(msg.value == NFT_MINT_FEE, "DragonBreedingNFT : Incorrect ETH amount");
+        require(msg.value == NFT_MINT_FEE, "DragonBreed : Incorrect ETH amount");
         return requestRandomWordsForPurpose(RequestPurpose.MINTING, 0, 0);
     }
 
-    // 드래곤 교배 함수
+    // 드래곤을 교배시키는 함수입니다.
     function breedDragons(uint256 parent1TokenId, uint256 parent2TokenId) external payable returns (uint256 requestId) {
-        require(msg.value == BREEDING_FEE, "DragonBreedingNFT : Incorrect ETH amount");
-        require(ownerOf(parent1TokenId) != address(0) && ownerOf(parent2TokenId) != address(0), "DragonBreedingNFT : Dragon does not exist");
-        require(_isDragonOwnedOrRentedBySender(parent1TokenId) || _isDragonOwnedOrRentedBySender(parent2TokenId), "At least one dragon must be owned or rented by the caller.");
+        require(msg.value == DragonBreedLib.BREEDING_FEE, "DragonBreed : Incorrect ETH amount");
+        require(dragonRental.isDragonOwnedOrRentedBySender(parent1TokenId) || dragonRental.isDragonOwnedOrRentedBySender(parent2TokenId), "DragonBreed : At least one dragon must be owned or rented by the caller.");
 
-        Gender parent1Gender = getDragonGender(parent1TokenId);
-        Gender parent2Gender = getDragonGender(parent2TokenId);
+        DragonNFTLib.Gender parent1Gender = dragonNft.getDragonInfo(parent1TokenId).gender;
+        DragonNFTLib.Gender parent2Gender = dragonNft.getDragonInfo(parent2TokenId).gender;
+        require(parent1Gender != parent2Gender, "DragonBreed : Dragons must be of different genders");
 
-        require(parent1Gender != parent2Gender, "DragonBreedingNFT : Dragons must be of different genders");
-        require(block.timestamp >= lastBreedingTime[parent1TokenId] + BREEDING_COOL_DOWN && block.timestamp >= lastBreedingTime[parent2TokenId] + BREEDING_COOL_DOWN, "DragonBreedingNFT : Breeding cooldown active");
+        uint256 parent1LastBreedingTime = dragonBreed.getLastBreedingTime(parent1TokenId);
+        uint256 parent2LastBreedingTime = dragonBreed.getLastBreedingTime(parent2TokenId);
+        require(block.timestamp >= parent1LastBreedingTime + DragonBreedLib.BREEDING_COOL_DOWN && block.timestamp >= parent2LastBreedingTime + DragonBreedLib.BREEDING_COOL_DOWN, "DragonBreed : Breeding cooldown active");
         
         return requestRandomWordsForPurpose(RequestPurpose.BREEDING, parent1TokenId, parent2TokenId);
     }
 
-    // Chainlink VRF 랜덤값 요청 함수
+    // Chainlink VRF 랜덤값을 요청하는 함수입니다.
     function requestRandomWordsForPurpose(RequestPurpose _purpose, uint256 _parent1TokenId, uint256 _parent2TokenId) internal returns(uint256 requestId) {
         requestId = COORDINATOR.requestRandomWords(
             keyHash,
@@ -99,14 +122,12 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner, DragonBreedingNFT {
         });
 
         if (_purpose == RequestPurpose.BREEDING) {
-            breedingRequests[requestId] = BreedingRequest({
+            breedingRequests[requestId] = DragonBreedingPair({
                 parent1TokenId : _parent1TokenId,
                 parent2TokenId : _parent2TokenId
             });
         }
 
-        requestIds.push(requestId);
-        lastRequestId = requestId;
         emit RequestSent(requestId, numWords);
         return requestId;
     }
@@ -118,24 +139,19 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner, DragonBreedingNFT {
         s_requests[_requestId].randomWords = _randomWords;
 
         if(s_requests[_requestId].requestPurpose == RequestPurpose.MINTING) {
-            mintNewDragon(s_requests[_requestId].requester, _randomWords);
+            dragonNft.mintNewDragon(s_requests[_requestId].requester, _randomWords);
         } else if(s_requests[_requestId].requestPurpose == RequestPurpose.BREEDING) {
-            breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords);
-            distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
+            dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords);
+            dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
         }
-        emit RequestFulfilled(_requestId, _randomWords);
-    }
 
-    function getRequestStatus(uint256 _requestId) external view returns (bool fulfilled, uint256[] memory randomWords) {
-        require(s_requests[_requestId].exists, "request not found");
-        RequestStatus memory request = s_requests[_requestId];
-        return (request.fulfilled, request.randomWords);
+        emit RequestFulfilled(_requestId, _randomWords);
     }
 
     // 스마트 컨트랙트에 저장된 이더리움을 스마트 컨트랙트 소유자에게 전송합니다.
     function withdraw() external {
         uint256 balance = address(this).balance;
-        require(balance > 0, "DragonBreedingNFT : No ETH to withdraw");
+        require(balance > 0, "DragonBreed : No ETH to withdraw");
         payable(msg.sender).transfer(balance);
     }
 }
