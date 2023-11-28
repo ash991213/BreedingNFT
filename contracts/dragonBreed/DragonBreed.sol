@@ -54,6 +54,8 @@ contract DragonBreed {
         uint256 tokenId = dragonNft.createDragon(requester, gender, rarity, species, damage, xpPerSec);
         updateLastBreedingTime(parent1TokenId, parent2TokenId);
 
+        dragonRental.cancelRental(tokenId);
+
         emit DragonBred(parent1TokenId, parent2TokenId, tokenId);
     }
 

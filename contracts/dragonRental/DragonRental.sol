@@ -11,7 +11,11 @@ contract DragonRental {
     // 드래곤 대여 정보를 저장하는 매핑
     mapping(uint256 => DragonRentalLib.DragonRental) public dragonRentals;
 
+    // 대여중인 드래곤 배열
+    uint256[] private rentedDragons;
+
     event DragonRented(uint256 indexed tokenId, address indexed renter, uint256 duration);
+    event DragonRentalCancelled(uint256 indexed tokenId, address indexed renter, uint256 cancledTime);
 
     constructor(address _dragonNft) {
         dragonNft = IDragonNFT(_dragonNft);
@@ -29,7 +33,32 @@ contract DragonRental {
             renter : msg.sender
         });
 
+        rentedDragons.push(tokenId);
+
         emit DragonRented(tokenId, msg.sender, block.timestamp + 48 hours);
+    }
+
+    // 드래곤 대여를 취소합니다.
+    function cancelRental(uint256 tokenId) external {
+        require(dragonRentals[tokenId].renter == msg.sender, "DragonRental: Not renter.");
+        require(isRentalActive(tokenId), "DragonRental: Rental not active.");
+
+        delete dragonRentals[tokenId];
+
+        for (uint256 i = 0; i < rentedDragons.length; i++) {
+            if (rentedDragons[i] == tokenId) {
+                rentedDragons[i] = rentedDragons[rentedDragons.length - 1];
+                rentedDragons.pop();
+                break;
+            }
+        }
+
+        emit DragonRentalCancelled(tokenId, dragonRentals[tokenId].renter, block.timestamp);
+    }
+
+    // 현재 대여 중인 드래곤 목록 조회
+    function getCurrentlyRentedDragons() public view returns (uint256[] memory) {
+        return rentedDragons;
     }
 
     // 특정 드래곤이 호출자에 의해 소유되었거나 현재 대여중인지 확인합니다.

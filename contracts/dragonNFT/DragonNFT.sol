@@ -24,6 +24,12 @@ contract DragonNFT is ERC721, Ownable {
     // TokenID에 따른 드래곤 정보를 저장하는 매핑
     mapping(uint256 => DragonNFTLib.Dragon) public dragons;
 
+    // 사용자가 보유한 드래곤 목록
+    mapping(address => uint256[]) private ownedTokens;
+
+    // ?
+    mapping(uint256 => uint256) private ownedTokensIndex;
+
     // 희귀도별 경험치 획득량, 확률 가중치, 데미지
     uint32[] private rarityBasedExperience = [10, 12, 14, 16, 18, 20];
     uint8[] private speciesCountPerRarity = [8, 5, 4, 3, 2, 1];
@@ -33,12 +39,12 @@ contract DragonNFT is ERC721, Ownable {
     uint8 immutable MAX_LEVEL;
 
     // 레벨업 하는데 필요한 경험치 배열
-    uint32[] public xpToLevelUp;
+    uint256[] public xpToLevelUp;
 
     event NewDragonBorn(uint256 _tokenId, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint64 _damage, uint256 _lastInteracted, uint32 _xpPerSec);
-    event DragonExperienceGained(uint256 _tokenId, uint8 _level, uint32 _xp, uint32 _xpToAdd);
-    event DragonLevelUp(uint256 _tokenId, uint8 _level, uint32 _xp, uint64 _damage);
-    event DragonLevelXPAdjusted(uint8 level, uint32 previousXP, uint32 newXP);
+    event DragonExperienceGained(uint256 _tokenId, uint8 _level, uint256 _xp, uint32 _xpToAdd);
+    event DragonLevelUp(uint256 _tokenId, uint8 _level, uint256 _xp, uint64 _damage);
+    event DragonLevelXPAdjusted(uint8 level, uint256 previousXP, uint256 newXP);
 
     modifier onlyOperator() {
         require(operator.isOperator(msg.sender), "DragonNFT : Not a valid operator");
@@ -46,7 +52,7 @@ contract DragonNFT is ERC721, Ownable {
     }
 
     // _xpToLevelUp 비선형적으로 계산해서 인자값으로 받습니다.
-    constructor(uint8 _maxLevel, uint32[] memory _xpToLevelUp, address _operator) ERC721("Dragon Rearing","DR") {
+    constructor(uint8 _maxLevel, uint256[] memory _xpToLevelUp, address _operator) ERC721("Dragon Rearing","DR") {
         require(_maxLevel == _xpToLevelUp.length, "DragonNFT : Max level and xp array length must match");
         MAX_LEVEL = _maxLevel;
         xpToLevelUp = _xpToLevelUp;
@@ -96,12 +102,12 @@ contract DragonNFT is ERC721, Ownable {
         require(secondsPassed > 0, "DragonNFT : No time passed since last interaction");
 
         uint32 xpToAdd = uint32(secondsPassed * dragon.xpPerSec);
-        uint32 xpRequiredForNextLevel = xpToLevelUp[dragon.level - 1];
+        uint256 xpRequiredForNextLevel = xpToLevelUp[dragon.level - 1];
 
         // 레벨업을 위한 경험치가 충분한지 확인합니다.
         if (dragon.xp + xpToAdd >= xpRequiredForNextLevel) {
             uint8 levelsGained = 0;
-            uint32 xpRemaining = dragon.xp + xpToAdd;
+            uint256 xpRemaining = dragon.xp + xpToAdd;
 
             // 드래곤의 경험치가 다음 레벨업에 필요한 경험치 이상인지를 반복적으로 확인하고, 필요한 경우 드래곤의 레벨을 올립니다.
             while (xpRemaining >= xpRequiredForNextLevel && dragon.level + levelsGained < MAX_LEVEL) {
@@ -128,9 +134,9 @@ contract DragonNFT is ERC721, Ownable {
     }
 
     // 레벨에 따라 필요한 XP를 재설정합니다.
-    function setXpToLevelUp(uint8 level, uint32 xpRequired) external onlyOwner {
+    function setXpToLevelUp(uint8 level, uint256 xpRequired) external onlyOwner {
         require(level < MAX_LEVEL, "DragonNFT : Invalid level");
-        uint32 previousXP = xpToLevelUp[level];
+        uint256 previousXP = xpToLevelUp[level];
         xpToLevelUp[level] = xpRequired;
         emit DragonLevelXPAdjusted(level, previousXP, xpRequired);
     }
@@ -153,5 +159,40 @@ contract DragonNFT is ERC721, Ownable {
     // 드래곤의 희귀도별 데미지를 반환합니다.
     function getRarityBasedDamage() external view returns (uint64[] memory) {
         return rarityBasedDamage;
+    }
+
+     // 사용자가 소유한 NFT 목록을 반환합니다.
+    function getOwnedTokens(address user) external view returns (uint256[] memory) {
+        return ownedTokens[user];
+    }
+
+    // 토큰을 새로운 주소로 전송할 때 호출됩니다.
+    function _transfer(address from, address to, uint256 tokenId) internal override {
+        super._transfer(from, to, tokenId);
+
+        // 소유자 변경 처리
+        removeTokenFromOwnerEnumeration(from, tokenId);
+        addTokenToOwnerEnumeration(to, tokenId);
+    }
+
+    // 소유자의 토큰 목록에서 토큰을 제거합니다.
+    function removeTokenFromOwnerEnumeration(address from, uint256 tokenId) private {
+        uint256 lastTokenIndex = ownedTokens[from].length - 1;
+        uint256 tokenIndex = ownedTokensIndex[tokenId];
+
+        if (tokenIndex != lastTokenIndex) {
+            uint256 lastTokenId = ownedTokens[from][lastTokenIndex];
+
+            ownedTokens[from][tokenIndex] = lastTokenId;
+            ownedTokensIndex[lastTokenId] = tokenIndex;
+        }
+
+        ownedTokens[from].pop();
+    }
+
+    // 소유자의 토큰 목록에 토큰을 추가합니다.
+    function addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
+        ownedTokensIndex[tokenId] = ownedTokens[to].length;
+        ownedTokens[to].push(tokenId);
     }
 }

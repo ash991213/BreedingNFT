@@ -62,7 +62,7 @@ library DragonNFTLib {
         Rarity rarity;
         Species specie;
         uint8 level;
-        uint32 xp;
+        uint256 xp;
         uint64 damage;
         uint256 lastInteracted;
         uint32 xpPerSec;

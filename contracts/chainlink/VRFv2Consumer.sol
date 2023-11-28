@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "hardhat/console.sol";
+
 // * chainlink VRF
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
@@ -29,7 +31,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     bytes32 constant keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
 
     // 콜백 함수 가스 한도
-    uint32 callbackGasLimit = 300000;
+    uint32 callbackGasLimit = 1000000;
 
     // Request Confirm 횟수 -> 높일 시 더 안정적으로 랜덤값을 가져오지만 속도가 오래걸림 평균 - 3
     uint16 requestConfirmations = 3;
@@ -37,8 +39,12 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     // 요청할 랜덤 단어 수
     uint32 numWords = 4;
 
+    // past requests Id.
+    uint256[] public requestIds;
+    uint256 public lastRequestId;
+
     // 드래곤 발행 수수료
-    uint256 public constant NFT_MINT_FEE = 0.01 ether;
+    uint256 public constant NFT_MINT_FEE = 1 ether;
 
     // 요청 타입 (Mint, Breed)
     enum RequestPurpose {
@@ -51,6 +57,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
         bool fulfilled;
         bool exists;
         RequestPurpose requestPurpose;
+        uint256 rentedDragonTokenId;
         address requester;
         uint256[] randomWords;
     }
@@ -66,6 +73,11 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
 
     // Request Id에 연결된 부모 드래곤 tokenId
     mapping(uint256 => DragonBreedingPair) public breedingRequests;
+
+    // map rollers to requestIds
+    mapping(uint256 => address) private s_rollers;
+    // map vrf results to rollers
+    mapping(address => uint256) private s_results;
 
     event RequestSent(uint256 requestId, uint32 numWords);
     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
@@ -84,7 +96,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     // 드래곤을 생성하는 함수입니다.
     function mintNewDragon() external payable returns (uint256 requestId) {
         require(msg.value == NFT_MINT_FEE, "DragonBreed : Incorrect ETH amount");
-        return requestRandomWordsForPurpose(RequestPurpose.MINTING, 0, 0);
+        return requestRandomWordsForPurpose(RequestPurpose.MINTING, 0, 0, 0);
     }
 
     // 드래곤을 교배시키는 함수입니다.
@@ -99,12 +111,23 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
         uint256 parent1LastBreedingTime = dragonBreed.getLastBreedingTime(parent1TokenId);
         uint256 parent2LastBreedingTime = dragonBreed.getLastBreedingTime(parent2TokenId);
         require(block.timestamp >= parent1LastBreedingTime + DragonBreedLib.BREEDING_COOL_DOWN && block.timestamp >= parent2LastBreedingTime + DragonBreedLib.BREEDING_COOL_DOWN, "DragonBreed : Breeding cooldown active");
+
+        uint256 rentedDragonTokenId;
+        bool isParent1Rented = !(dragonNft.ownerOf(parent1TokenId) == msg.sender);
+        bool isParent2Rented = !(dragonNft.ownerOf(parent2TokenId) == msg.sender);
+        if(isParent1Rented && isParent2Rented) {
+            rentedDragonTokenId = 0;
+        } else {
+            rentedDragonTokenId = isParent1Rented ? parent1TokenId : parent2TokenId;
+        }
         
-        return requestRandomWordsForPurpose(RequestPurpose.BREEDING, parent1TokenId, parent2TokenId);
+        return requestRandomWordsForPurpose(RequestPurpose.BREEDING, parent1TokenId, parent2TokenId, rentedDragonTokenId);
     }
 
     // Chainlink VRF 랜덤값을 요청하는 함수입니다.
-    function requestRandomWordsForPurpose(RequestPurpose _purpose, uint256 _parent1TokenId, uint256 _parent2TokenId) internal returns(uint256 requestId) {
+    function requestRandomWordsForPurpose(RequestPurpose _purpose, uint256 _parent1TokenId, uint256 _parent2TokenId, uint256 _rentedDragonTokenId) internal returns(uint256 requestId) {
+        require(address(COORDINATOR) != address(0), "DragonBreed: Invalid VRFCoordinator address");
+
         requestId = COORDINATOR.requestRandomWords(
             keyHash,
             s_subscriptionId,
@@ -113,10 +136,13 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
             numWords
         );
 
+        require(requestId > 0, "DragonBreed: Failed to request random words");
+
         s_requests[requestId] = RequestStatus({
             randomWords: new uint256[](0),
             exists: true,
             requestPurpose : _purpose,
+            rentedDragonTokenId : _rentedDragonTokenId,
             requester : msg.sender,
             fulfilled: false
         });
@@ -128,6 +154,8 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
             });
         }
 
+        requestIds.push(requestId);
+        lastRequestId = requestId;
         emit RequestSent(requestId, numWords);
         return requestId;
     }
