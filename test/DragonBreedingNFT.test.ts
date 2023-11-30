@@ -10,8 +10,8 @@ describe('DragonNftTest', function () {
 	let testVRFv2Consumer: Contract;
 	let testVRFCoordinatorV2Mock: Contract;
 	let owner: Signer;
-	let addr1: Signer;
-	let addr2: Signer;
+	let user1: Signer;
+	let user2: Signer;
 
 	const maxLevel = 100;
 	let xpToLevelUp = [10000];
@@ -37,7 +37,7 @@ describe('DragonNftTest', function () {
 		const TestVRFv2Consumer = await ethers.getContractFactory('TestVRFv2Consumer');
 		const TestVRFCoordinatorV2Mock = await ethers.getContractFactory('TestVRFCoordinatorV2Mock');
 
-		[owner, addr1, addr2] = await ethers.getSigners();
+		[owner, user1, user2] = await ethers.getSigners();
 
 		operatorManager = await OperatorManager.connect(owner).deploy();
 		await operatorManager.deployed();
@@ -89,11 +89,7 @@ describe('DragonNftTest', function () {
 
 	describe('VRFv2Consumer', () => {
 		it('Should be able to deploy', async () => {
-			const overrides = {
-				value: ethers.utils.parseEther('1'),
-			};
-
-			const transactionMint = await testVRFv2Consumer.connect(owner).mintNewDragon(overrides);
+			const transactionMint = await testVRFv2Consumer.connect(owner).mintNewDragon({ value: ethers.utils.parseEther('1') });
 			const receiptTxMint = await transactionMint.wait();
 			const requestSentEvent = receiptTxMint.events.find((e: any) => e.event === 'RequestSent');
 
@@ -102,6 +98,11 @@ describe('DragonNftTest', function () {
 
 			const balance = await dragonNFT.balanceOf(owner.getAddress());
 			expect(balance).to.equal(1);
+
+			const ownedDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+			expect(ownedDragon.length).to.equal(1);
+
+			await dragonNFT.connect(owner).safeTransferFrom(owner.getAddress(), user1.getAddress(), ownedDragon[0]);
 		});
 	});
 });

@@ -87,6 +87,7 @@ contract DragonNFT is ERC721, Ownable {
         });
 
         _safeMint(_to, _tokenId);
+        addTokenToOwnerEnumeration(_to, _tokenId);
         emit NewDragonBorn(_tokenId, _gender, _rarity, _specie, _damage, block.timestamp, _xpPerSec);
         return tokenId;
     }
