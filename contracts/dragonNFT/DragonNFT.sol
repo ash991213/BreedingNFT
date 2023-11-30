@@ -31,9 +31,9 @@ contract DragonNFT is ERC721, Ownable {
     mapping(uint256 => uint256) private ownedTokensIndex;
 
     // 희귀도별 경험치 획득량, 확률 가중치, 데미지
-    uint32[] private rarityBasedExperience = [10, 12, 14, 16, 18, 20];
+    uint8[] private rarityBasedExperience = [10, 12, 14, 16, 18, 20];
     uint8[] private speciesCountPerRarity = [8, 5, 4, 3, 2, 1];
-    uint64[] private rarityBasedDamage = [50, 100, 170, 300, 450, 700];
+    uint16[] private rarityBasedDamage = [50, 100, 170, 300, 450, 700];
 
     // 최고 레벨
     uint8 immutable MAX_LEVEL;
@@ -41,9 +41,9 @@ contract DragonNFT is ERC721, Ownable {
     // 레벨업 하는데 필요한 경험치 배열
     uint256[] public xpToLevelUp;
 
-    event NewDragonBorn(uint256 _tokenId, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint64 _damage, uint256 _lastInteracted, uint32 _xpPerSec);
+    event NewDragonBorn(uint256 _tokenId, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint16 _damage, uint256 _lastInteracted, uint32 _xpPerSec);
     event DragonExperienceGained(uint256 _tokenId, uint8 _level, uint256 _xp, uint32 _xpToAdd);
-    event DragonLevelUp(uint256 _tokenId, uint8 _level, uint256 _xp, uint64 _damage);
+    event DragonLevelUp(uint256 _tokenId, uint8 _level, uint256 _xp, uint16 _damage);
     event DragonLevelXPAdjusted(uint8 level, uint256 previousXP, uint256 newXP);
 
     modifier onlyOperator() {
@@ -64,14 +64,14 @@ contract DragonNFT is ERC721, Ownable {
         DragonNFTLib.Gender gender = _randomWords[0].determineGender();
         DragonNFTLib.Rarity rarity = _randomWords[1].determineRarity();
         DragonNFTLib.Species specie = _randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
-        uint64 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
-        uint32 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
+        uint16 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
+        uint8 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
 
         createDragon(requester, gender, rarity, specie, damage, xpPerSec);
     }
 
     // 드래곤 NFT를 생성합니다.
-    function createDragon(address _to, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint64 _damage, uint32 _xpPerSec) public onlyOperator returns(uint256 tokenId) {
+    function createDragon(address _to, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint16 _damage, uint8 _xpPerSec) public onlyOperator returns(uint256 tokenId) {
         uint256 _tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
 
@@ -147,7 +147,7 @@ contract DragonNFT is ERC721, Ownable {
     }
 
     // 드래곤의 희귀도별 경험치 획득량을 반환합니다.
-    function getRarityBasedExperience() external view returns (uint32[] memory) {
+    function getRarityBasedExperience() external view returns (uint8[] memory) {
         return rarityBasedExperience;
     }
 
@@ -157,7 +157,7 @@ contract DragonNFT is ERC721, Ownable {
     }
 
     // 드래곤의 희귀도별 데미지를 반환합니다.
-    function getRarityBasedDamage() external view returns (uint64[] memory) {
+    function getRarityBasedDamage() external view returns (uint16[] memory) {
         return rarityBasedDamage;
     }
 

@@ -2,12 +2,14 @@
 pragma solidity ^0.8.20;
 
 import "../dragonNFT/interface/IDragonNFT.sol";
+import "../operator/interface/IOperator.sol";
 
 import "./library/DragonRentalLib.sol";
 
 contract DragonRental {
+    IOperator private immutable operator;
     IDragonNFT private dragonNft;
-
+    
     // 드래곤 대여 정보를 저장하는 매핑
     mapping(uint256 => DragonRentalLib.DragonRental) public dragonRentals;
 
@@ -17,8 +19,9 @@ contract DragonRental {
     event DragonRented(uint256 indexed tokenId, address indexed renter, uint256 duration);
     event DragonRentalCancelled(uint256 indexed tokenId, address indexed renter, uint256 cancledTime);
 
-    constructor(address _dragonNft) {
+    constructor(address _dragonNft, address _operator) {
         dragonNft = IDragonNFT(_dragonNft);
+        operator = IOperator(_operator);
     }
 
     // 드래곤을 대여합니다.
@@ -40,7 +43,7 @@ contract DragonRental {
 
     // 드래곤 대여를 취소합니다.
     function cancelRental(uint256 tokenId) external {
-        require(dragonRentals[tokenId].renter == msg.sender, "DragonRental: Not renter.");
+        require(dragonRentals[tokenId].renter == msg.sender || operator.isOperator(msg.sender), "DragonRental: Not renter or Operator.");
         require(isRentalActive(tokenId), "DragonRental: Rental not active.");
 
         delete dragonRentals[tokenId];
@@ -85,4 +88,3 @@ contract DragonRental {
         return dragonRentals[tokenId];
     }
 }
-

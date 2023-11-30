@@ -1,18 +1,9 @@
 import { ethers } from 'hardhat';
 import { Contract, Signer } from 'ethers';
 import { expect } from 'chai';
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 
 describe('DragonNftTest', function () {
-	let operatorManager: Contract;
-	let dragonNFT: Contract;
-	let dragonRental: Contract;
-	let dragonBreed: Contract;
-	let vrfv2Consumer: Contract;
-	let contractForVrfTestingCode: Contract;
-	let owner: Signer;
-	let addr1: Signer;
-	let addr2: Signer;
-
 	const maxLevel = 100;
 	let xpToLevelUp = [10000];
 
@@ -29,7 +20,17 @@ describe('DragonNftTest', function () {
 		xpToLevelUp.push(nextXp);
 	}
 
-	before(async () => {
+	async function deployContractsFixture() {
+		let operatorManager: Contract;
+		let dragonNFT: Contract;
+		let dragonRental: Contract;
+		let dragonBreed: Contract;
+		let vrfv2Consumer: Contract;
+		let contractForVrfTestingCode: Contract;
+		let owner: Signer;
+		let addr1: Signer;
+		let addr2: Signer;
+
 		const OperatorManager = await ethers.getContractFactory('OperatorManager');
 		const DragonNFT = await ethers.getContractFactory('DragonNFT');
 		const DragonRental = await ethers.getContractFactory('DragonRental');
@@ -61,15 +62,19 @@ describe('DragonNftTest', function () {
 		const transactionFund = await contractForVrfTestingCode.connect(owner).fundSubscription(subscriptionEvent.args.subId, ethers.utils.parseEther('1'));
 		await transactionFund.wait();
 
-		vrfv2Consumer = await VRFv2Consumer.deploy(subscriptionEvent.args.subId, dragonNFT.address, dragonRental.address, dragonBreed.address, contractForVrfTestingCode.address);
+		vrfv2Consumer = await VRFv2Consumer.connect(owner).deploy(subscriptionEvent.args.subId, dragonNFT.address, dragonRental.address, dragonBreed.address, contractForVrfTestingCode.address);
 		await vrfv2Consumer.deployed();
 
 		const transactionAddConsumer = await contractForVrfTestingCode.addConsumer(subscriptionEvent.args.subId, vrfv2Consumer.address);
 		await transactionAddConsumer.wait();
-	});
+
+		return { operatorManager, dragonNFT, dragonRental, dragonBreed, contractForVrfTestingCode, vrfv2Consumer, owner, addr1, addr2 };
+	}
 
 	describe('DragonNFT', () => {
 		it('Should be able to deploy', async () => {
+			const { dragonNFT } = await loadFixture(deployContractsFixture);
+
 			const contractRarityBasedExperience = await dragonNFT.getRarityBasedExperience();
 			let isEqual = rarityBasedExperience.length === contractRarityBasedExperience.length && rarityBasedExperience.every((value, index) => value === contractRarityBasedExperience[index]);
 			expect(isEqual).to.be.true;
@@ -86,7 +91,7 @@ describe('DragonNftTest', function () {
 
 	describe('VRFv2Consumer', () => {
 		it('Should be able to deploy', async () => {
-			vrfv2Consumer;
+			// vrfv2Consumer;
 		});
 	});
 });

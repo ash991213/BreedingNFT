@@ -22,9 +22,9 @@ contract DragonBreed {
     mapping(uint256 => uint256) public lastBreedingTime;
 
     // 희귀도별 경험치 획득량, 확률 가중치, 데미지
-    uint32[] public rarityBasedExperience;
+    uint8[] public rarityBasedExperience;
     uint8[] public speciesCountPerRarity;
-    uint64[] public rarityBasedDamage;
+    uint16[] public rarityBasedDamage;
 
     // 교배 관련 이벤트
     event DragonBred(uint256 _fatherTokenId, uint256 _matherTokenId, uint256 _childTokenId);
@@ -48,8 +48,8 @@ contract DragonBreed {
         DragonNFTLib.Gender gender = _randomWords[0].determineGender();
         DragonNFTLib.Rarity rarity = determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
         DragonNFTLib.Species species = _randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
-        uint64 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
-        uint32 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
+        uint16 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
+        uint8 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
 
         uint256 tokenId = dragonNft.createDragon(requester, gender, rarity, species, damage, xpPerSec);
         updateLastBreedingTime(parent1TokenId, parent2TokenId);

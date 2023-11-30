@@ -1,2 +1,3 @@
 - 테스트 코드 작성
-- 드래곤을 대여하여 번식하였을 경우 대여 가능 리스트에서 자동으로 삭제
+- Ganache에서 사용할 수 있는 로컬 VRFCoordinatorV2Mock 연결 후 requestRandomWords 테스트
+- Ganache 테스트 완료 후 Sepolia 네트워크에서 loadFixture 사용

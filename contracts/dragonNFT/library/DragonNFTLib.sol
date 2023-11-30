@@ -63,9 +63,9 @@ library DragonNFTLib {
         Species specie;
         uint8 level;
         uint256 xp;
-        uint64 damage;
+        uint16 damage;
         uint256 lastInteracted;
-        uint32 xpPerSec;
+        uint8 xpPerSec;
     }
 
     // 랜덤 숫자를 기반으로 성별을 결정합니다.
@@ -94,22 +94,22 @@ library DragonNFTLib {
     }
 
     // 희귀도와 랜덤 숫자를 기반으로 데미지를 결정합니다.
-    function determineDamage(uint256 _randomValue, Rarity _rarity, uint64[] memory _rarityBasedDamage) internal pure returns(uint64) {
-        uint64 damage;
+    function determineDamage(uint256 _randomValue, Rarity _rarity, uint16[] memory _rarityBasedDamage) internal pure returns(uint16) {
+        uint16 damage;
 
         if (_rarity == Rarity.COMMON || _rarity == Rarity.RARE) {
-            damage = uint64(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 51));
+            damage = uint16(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 51));
         } else if (_rarity == Rarity.EPIC || _rarity == Rarity.UNIQUE) {
-            damage = uint64(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 151));
+            damage = uint16(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 151));
         } else {
-            damage = uint64(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 301));
+            damage = uint16(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 301));
         }
 
         return damage;
     }
 
     // 희귀도를 기반으로 획득 경험치를 결정합니다.
-    function determineExperience(Rarity _rarity, uint32[] memory _rarityBasedExperience) internal pure returns(uint32 experience) {
+    function determineExperience(Rarity _rarity, uint8[] memory _rarityBasedExperience) internal pure returns(uint8 experience) {
         return _rarityBasedExperience[uint(_rarity)];
     }
 }

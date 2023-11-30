@@ -2,7 +2,7 @@ import { ethers } from 'hardhat';
 
 async function main() {
 	const subscriptionId = 6889;
-	const maxLevel = 200;
+	const maxLevel = 100;
 	let xpToLevelUp = [100000];
 
 	for (let i = 1; i < maxLevel; i++) {
@@ -23,7 +23,7 @@ async function main() {
 	await dragonNFT.deployed();
 
 	const DragonRental = await ethers.getContractFactory('DragonRental');
-	const dragonRental = await DragonRental.deploy(dragonNFT.address);
+	const dragonRental = await DragonRental.deploy(dragonNFT.address, operatorManager.address);
 	await dragonRental.deployed();
 
 	const DragonBreed = await ethers.getContractFactory('DragonBreed');
