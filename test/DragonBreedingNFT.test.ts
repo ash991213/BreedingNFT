@@ -7,8 +7,8 @@ describe('DragonNftTest', function () {
 	let dragonNFT: Contract;
 	let dragonRental: Contract;
 	let dragonBreed: Contract;
-	let vrfv2Consumer: Contract;
-	let contractForVrfTestingCode: Contract;
+	let testVRFv2Consumer: Contract;
+	let testVRFCoordinatorV2Mock: Contract;
 	let owner: Signer;
 	let addr1: Signer;
 	let addr2: Signer;
@@ -34,8 +34,8 @@ describe('DragonNftTest', function () {
 		const DragonNFT = await ethers.getContractFactory('DragonNFT');
 		const DragonRental = await ethers.getContractFactory('DragonRental');
 		const DragonBreed = await ethers.getContractFactory('DragonBreed');
-		const VRFv2Consumer = await ethers.getContractFactory('VRFv2Consumer');
-		const ContractForVrfTestingCode = await ethers.getContractFactory('ContractForVrfTestingCode');
+		const TestVRFv2Consumer = await ethers.getContractFactory('TestVRFv2Consumer');
+		const TestVRFCoordinatorV2Mock = await ethers.getContractFactory('TestVRFCoordinatorV2Mock');
 
 		[owner, addr1, addr2] = await ethers.getSigners();
 
@@ -51,21 +51,24 @@ describe('DragonNftTest', function () {
 		dragonBreed = await DragonBreed.connect(owner).deploy(dragonNFT.address, dragonRental.address, operatorManager.address);
 		await dragonBreed.deployed();
 
-		contractForVrfTestingCode = await ContractForVrfTestingCode.connect(owner).deploy();
-		await contractForVrfTestingCode.deployed();
+		testVRFCoordinatorV2Mock = await TestVRFCoordinatorV2Mock.connect(owner).deploy();
+		await testVRFCoordinatorV2Mock.deployed();
 
-		const transaction = await contractForVrfTestingCode.connect(owner).createSubscription();
-		const receiptTx = await transaction.wait();
-		const subscriptionEvent = receiptTx.events.find((e: any) => e.event === 'SubscriptionCreated');
+		const transactionCreate = await testVRFCoordinatorV2Mock.connect(owner).createSubscription();
+		const receiptTxCreate = await transactionCreate.wait();
+		const subscriptionEvent = receiptTxCreate.events.find((e: any) => e.event === 'SubscriptionCreated');
 
-		const transactionFund = await contractForVrfTestingCode.connect(owner).fundSubscription(subscriptionEvent.args.subId, ethers.utils.parseEther('1'));
+		const transactionFund = await testVRFCoordinatorV2Mock.connect(owner).fundSubscription(subscriptionEvent.args.subId, ethers.utils.parseEther('100'));
 		await transactionFund.wait();
 
-		vrfv2Consumer = await VRFv2Consumer.deploy(subscriptionEvent.args.subId, dragonNFT.address, dragonRental.address, dragonBreed.address, contractForVrfTestingCode.address);
-		await vrfv2Consumer.deployed();
+		testVRFv2Consumer = await TestVRFv2Consumer.deploy(subscriptionEvent.args.subId, dragonNFT.address, dragonRental.address, dragonBreed.address, testVRFCoordinatorV2Mock.address);
+		await testVRFv2Consumer.deployed();
 
-		const transactionAddConsumer = await contractForVrfTestingCode.addConsumer(subscriptionEvent.args.subId, vrfv2Consumer.address);
+		const transactionAddConsumer = await testVRFCoordinatorV2Mock.addConsumer(subscriptionEvent.args.subId, testVRFv2Consumer.address);
 		await transactionAddConsumer.wait();
+
+		await operatorManager.addOperator(testVRFv2Consumer.address);
+		await operatorManager.addOperator(dragonBreed.address);
 	});
 
 	describe('DragonNFT', () => {
@@ -86,7 +89,19 @@ describe('DragonNftTest', function () {
 
 	describe('VRFv2Consumer', () => {
 		it('Should be able to deploy', async () => {
-			vrfv2Consumer;
+			const overrides = {
+				value: ethers.utils.parseEther('1'),
+			};
+
+			const transactionMint = await testVRFv2Consumer.connect(owner).mintNewDragon(overrides);
+			const receiptTxMint = await transactionMint.wait();
+			const requestSentEvent = receiptTxMint.events.find((e: any) => e.event === 'RequestSent');
+
+			const transactionRandomWords = await testVRFCoordinatorV2Mock.fulfillRandomWords(requestSentEvent.args.requestId, testVRFv2Consumer.address);
+			await transactionRandomWords.wait();
+
+			const balance = await dragonNFT.balanceOf(owner.getAddress());
+			expect(balance).to.equal(1);
 		});
 	});
 });

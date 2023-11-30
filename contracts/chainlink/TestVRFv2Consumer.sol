@@ -15,7 +15,7 @@ import "../dragonNFT/interface/IDragonNFT.sol";
 import "../dragonRental/interface/IDragonRental.sol";
 import "../dragonBreed/interface/IDragonBreed.sol";
 
-contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
+contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     IDragonNFT private dragonNft;
     IDragonRental private dragonRental;
     IDragonBreed private dragonBreed;
@@ -29,17 +29,13 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     bytes32 constant keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
 
     // 콜백 함수 가스 한도
-    uint32 callbackGasLimit = 1000000;
+    uint32 callbackGasLimit = 3000000;
 
     // Request Confirm 횟수 -> 높일 시 더 안정적으로 랜덤값을 가져오지만 속도가 오래걸림 평균 - 3
     uint16 requestConfirmations = 3;
 
     // 요청할 랜덤 단어 수
     uint32 numWords = 4;
-
-    // past requests Id.
-    uint256[] public requestIds;
-    uint256 public lastRequestId;
 
     // 드래곤 발행 수수료
     uint256 public constant NFT_MINT_FEE = 1 ether;
@@ -72,18 +68,19 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     // Request Id에 연결된 부모 드래곤 tokenId
     mapping(uint256 => DragonBreedingPair) public breedingRequests;
 
-    // map rollers to requestIds
-    mapping(uint256 => address) private s_rollers;
-    // map vrf results to rollers
-    mapping(address => uint256) private s_results;
-
     event RequestSent(uint256 requestId, uint32 numWords);
     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
 
     /**
+     * @notice It just for local test.
+     */
+    uint256[] public s_randomWords;
+    event ReturnedRandomness(uint256[] randomWords);
+
+    /**
      * HARDCODED FOR SEPOLIA COORDINATOR: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
      */
-    constructor(uint64 subscriptionId, address _dragonNft, address _dragonRental, address _dragonBreed, address _coordinator) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) {
+    constructor(uint64 subscriptionId, address _dragonNft, address _dragonRental, address _dragonBreed, address _coordinator) VRFConsumerBaseV2(_coordinator) ConfirmedOwner(msg.sender) {
         COORDINATOR = VRFCoordinatorV2Interface(_coordinator);
         s_subscriptionId = subscriptionId;
         dragonNft = IDragonNFT(_dragonNft);
@@ -156,8 +153,6 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
             });
         }
 
-        requestIds.push(requestId);
-        lastRequestId = requestId;
         emit RequestSent(requestId, numWords);
         return requestId;
     }
@@ -183,5 +178,9 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
         uint256 balance = address(this).balance;
         require(balance > 0, "DragonBreed : No ETH to withdraw");
         payable(msg.sender).transfer(balance);
+    }
+
+    function getRandomWords() external view returns(uint256[] memory randomWords) {
+        return s_randomWords;
     }
 }
