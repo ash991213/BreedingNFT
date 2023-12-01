@@ -1,6 +1,13 @@
 import { ethers } from 'hardhat';
 import { Contract, Signer } from 'ethers';
 import { expect } from 'chai';
+import { time } from 'openzeppelin-test-helpers';
+
+async function timeIncreaseTo(seconds: number) {
+	const delay = 1000 - new Date().getMilliseconds();
+	await new Promise((resolve) => setTimeout(resolve, delay));
+	await time.increaseTo(seconds);
+}
 
 describe('DragonNftTest', function () {
 	let operatorManager: Contract;
@@ -15,7 +22,6 @@ describe('DragonNftTest', function () {
 
 	const maxLevel = 100;
 	let xpToLevelUp = [10000];
-
 	const rarityBasedExperience = [10, 12, 14, 16, 18, 20];
 	const speciesCountPerRarity = [8, 5, 4, 3, 2, 1];
 	const rarityBasedDamage = [50, 100, 170, 300, 450, 700];
@@ -23,7 +29,7 @@ describe('DragonNftTest', function () {
 	for (let i = 1; i < maxLevel; i++) {
 		let increaseRate;
 
-		increaseRate = i < 50 ? 1.1 : 1.2; // 레벨 1~50: 1.1배 증가 51~100: 1.2배 증가
+		increaseRate = i < 50 ? 1.1 : 1.2;
 
 		let nextXp = Math.ceil(xpToLevelUp[i - 1] * increaseRate);
 		xpToLevelUp.push(nextXp);
@@ -54,12 +60,12 @@ describe('DragonNftTest', function () {
 		testVRFCoordinatorV2Mock = await TestVRFCoordinatorV2Mock.connect(owner).deploy();
 		await testVRFCoordinatorV2Mock.deployed();
 
-		const transactionCreate = await testVRFCoordinatorV2Mock.connect(owner).createSubscription();
-		const receiptTxCreate = await transactionCreate.wait();
-		const subscriptionEvent = receiptTxCreate.events.find((e: any) => e.event === 'SubscriptionCreated');
+		const transactionCreateSub = await testVRFCoordinatorV2Mock.connect(owner).createSubscription();
+		const receiptTxCreateSub = await transactionCreateSub.wait();
+		const subscriptionEvent = receiptTxCreateSub.events.find((e: any) => e.event === 'SubscriptionCreated');
 
-		const transactionFund = await testVRFCoordinatorV2Mock.connect(owner).fundSubscription(subscriptionEvent.args.subId, ethers.utils.parseEther('100'));
-		await transactionFund.wait();
+		const transactionFundSub = await testVRFCoordinatorV2Mock.connect(owner).fundSubscription(subscriptionEvent.args.subId, ethers.utils.parseEther('100'));
+		await transactionFundSub.wait();
 
 		testVRFv2Consumer = await TestVRFv2Consumer.deploy(subscriptionEvent.args.subId, dragonNFT.address, dragonRental.address, dragonBreed.address, testVRFCoordinatorV2Mock.address);
 		await testVRFv2Consumer.deployed();
@@ -71,24 +77,28 @@ describe('DragonNftTest', function () {
 		await operatorManager.addOperator(dragonBreed.address);
 	});
 
-	describe('DragonNFT', () => {
-		it('Should be able to deploy', async () => {
+	describe('DragonNFT Deployment', () => {
+		it('should match the rarity-based experience values with contract', async () => {
 			const contractRarityBasedExperience = await dragonNFT.getRarityBasedExperience();
-			let isEqual = rarityBasedExperience.length === contractRarityBasedExperience.length && rarityBasedExperience.every((value, index) => value === contractRarityBasedExperience[index]);
+			const isEqual = rarityBasedExperience.length === contractRarityBasedExperience.length && rarityBasedExperience.every((value, index) => value === contractRarityBasedExperience[index]);
 			expect(isEqual).to.be.true;
+		});
 
+		it('should match the species count per rarity with contract', async () => {
 			const contractSpeciesCountPerRarity = await dragonNFT.getSpeciesCountPerRarity();
-			isEqual = speciesCountPerRarity.length === contractSpeciesCountPerRarity.length && speciesCountPerRarity.every((value, index) => value === contractSpeciesCountPerRarity[index]);
+			const isEqual = speciesCountPerRarity.length === contractSpeciesCountPerRarity.length && speciesCountPerRarity.every((value, index) => value === contractSpeciesCountPerRarity[index]);
 			expect(isEqual).to.be.true;
+		});
 
+		it('should match the rarity-based damage values with contract', async () => {
 			const contractRarityBasedDamage = await dragonNFT.getRarityBasedDamage();
-			isEqual = rarityBasedDamage.length === contractRarityBasedDamage.length && rarityBasedDamage.every((value, index) => value === contractRarityBasedDamage[index]);
+			let isEqual = rarityBasedDamage.length === contractRarityBasedDamage.length && rarityBasedDamage.every((value, index) => value === contractRarityBasedDamage[index]);
 			expect(isEqual).to.be.true;
 		});
 	});
 
 	describe('VRFv2Consumer', () => {
-		it('Should be able to deploy', async () => {
+		it('should mint a new dragon successfully', async () => {
 			const transactionMint = await testVRFv2Consumer.connect(owner).mintNewDragon({ value: ethers.utils.parseEther('1') });
 			const receiptTxMint = await transactionMint.wait();
 			const requestSentEvent = receiptTxMint.events.find((e: any) => e.event === 'RequestSent');
@@ -96,13 +106,77 @@ describe('DragonNftTest', function () {
 			const transactionRandomWords = await testVRFCoordinatorV2Mock.fulfillRandomWords(requestSentEvent.args.requestId, testVRFv2Consumer.address);
 			await transactionRandomWords.wait();
 
-			const balance = await dragonNFT.balanceOf(owner.getAddress());
-			expect(balance).to.equal(1);
+			const ownersBalance = await dragonNFT.balanceOf(owner.getAddress());
+			const ownersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+			expect(ownersBalance).to.equal(1);
+			expect(ownersDragon.length).to.equal(1);
+		});
 
-			const ownedDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
-			expect(ownedDragon.length).to.equal(1);
+		it('should transfer a dragon from owner to user1', async () => {
+			const ownersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+			await dragonNFT.transferFrom(owner.getAddress(), user1.getAddress(), ownersDragon[0]);
 
-			await dragonNFT.connect(owner).safeTransferFrom(owner.getAddress(), user1.getAddress(), ownedDragon[0]);
+			const user1Balance = await dragonNFT.balanceOf(user1.getAddress());
+			const user1Dragon = await dragonNFT.getOwnedTokens(user1.getAddress());
+			expect(user1Balance).to.equal(1);
+			expect(user1Dragon.length).to.equal(1);
+		});
+
+		it('should retrieve correct dragon information after transfer', async () => {
+			const user1Dragon = await dragonNFT.getOwnedTokens(user1.getAddress());
+			const dragonInfo = await dragonNFT.getDragonInfo(user1Dragon[0]);
+
+			expect(dragonInfo.gender).to.satisfy((num: number) => num >= 0 && num < 2);
+			expect(dragonInfo.rarity).to.satisfy((num: number) => num >= 0 && num < 2);
+			expect(dragonInfo.specie).to.satisfy((num: number) => num >= 0 && num < 13);
+			expect(dragonInfo.level).to.equal(1);
+			expect(dragonInfo.xp).to.equal(0);
+			expect(dragonInfo.damage).to.satisfy((num: number) => num >= 50 && num < 151);
+			expect(dragonInfo.xpPerSec).to.satisfy((num: number) => num === 10 || num === 12);
+		});
+
+		it('should correctly calculate and add experience for one hour', async () => {
+			const timeDeposited = await time.latest();
+			await timeIncreaseTo(timeDeposited.add(time.duration.hours(1)).subn(1));
+
+			const user1Dragon = await dragonNFT.getOwnedTokens(user1.getAddress());
+			const dragon = await dragonNFT.getDragonInfo(user1Dragon[0]);
+
+			const xpForOneHour = dragon.xpPerSec * 3600;
+
+			let totalLevelsGained = 0;
+			let xpNeededForNextLevel = xpToLevelUp[dragon.level - 1];
+			let xpRemaining = xpForOneHour;
+
+			while (xpRemaining >= xpNeededForNextLevel && dragon.level + totalLevelsGained < maxLevel) {
+				xpRemaining -= xpNeededForNextLevel;
+				totalLevelsGained++;
+				if (dragon.level + totalLevelsGained < maxLevel) {
+					xpNeededForNextLevel = xpToLevelUp[dragon.level + totalLevelsGained - 1];
+				}
+			}
+
+			const dragonLevel = dragon.level + totalLevelsGained;
+
+			const transactionAddExp = await dragonNFT.connect(user1).addExperience(user1Dragon[0]);
+			const receiptTxAddExp = await transactionAddExp.wait();
+			const dragonExperienceGainedEvent = receiptTxAddExp.events.find((e: any) => e.event === 'DragonExperienceGained');
+
+			expect(dragonExperienceGainedEvent.args._tokenId).to.equal(user1Dragon[0]);
+			expect(dragonExperienceGainedEvent.args._xp).to.equal(0);
+			expect(dragonExperienceGainedEvent.args._level).to.equal(dragonLevel);
+			// ? 103번째 줄에서 드래곤을 발행하고 다른 테스트가 순차적으로 진행됨에 따라 1~10초 정도 약간의 시간차가 발생할 수 있음 따라서 조건에 dragon.xpPerSec * 10을 추가함
+			expect(dragonExperienceGainedEvent.args._xpToAdd).to.satisfy((num: number) => num >= xpForOneHour && num < xpForOneHour + dragon.xpPerSec * 10);
+		});
+
+		it('should correctly set experience required for next level and emit event', async () => {
+			const newXp = 1000;
+			const transactionSetXp = await dragonNFT.connect(owner).setXpToLevelUp(1, newXp);
+			const receiptTxSetXp = await transactionSetXp.wait();
+			const dragonLevelXPAdjustedEvent = receiptTxSetXp.events.find((e: any) => e.event === 'DragonLevelXPAdjusted');
+
+			expect(dragonLevelXPAdjustedEvent.args.previousXP).to.equal(xpToLevelUp[0]);
+			expect(dragonLevelXPAdjustedEvent.args.newXP).to.equal(1000);
 		});
 	});
 });

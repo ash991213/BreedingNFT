@@ -105,6 +105,8 @@ contract DragonNFT is ERC721, Ownable {
         uint32 xpToAdd = uint32(secondsPassed * dragon.xpPerSec);
         uint256 xpRequiredForNextLevel = xpToLevelUp[dragon.level - 1];
 
+        uint256 initialXp = dragon.xp;
+
         // 레벨업을 위한 경험치가 충분한지 확인합니다.
         if (dragon.xp + xpToAdd >= xpRequiredForNextLevel) {
             uint8 levelsGained = 0;
@@ -131,14 +133,14 @@ contract DragonNFT is ERC721, Ownable {
             dragon.lastInteracted = currentTime;
         }
 
-        emit DragonExperienceGained(tokenId, dragon.level, dragon.xp, xpToAdd);
+        emit DragonExperienceGained(tokenId, dragon.level, initialXp, xpToAdd);
     }
 
     // 레벨에 따라 필요한 XP를 재설정합니다.
     function setXpToLevelUp(uint8 level, uint256 xpRequired) external onlyOwner {
-        require(level < MAX_LEVEL, "DragonNFT : Invalid level");
-        uint256 previousXP = xpToLevelUp[level];
-        xpToLevelUp[level] = xpRequired;
+        require(level < MAX_LEVEL || level < 1, "DragonNFT : Invalid level");
+        uint256 previousXP = xpToLevelUp[level - 1];
+        xpToLevelUp[level - 1] = xpRequired;
         emit DragonLevelXPAdjusted(level, previousXP, xpRequired);
     }
 
