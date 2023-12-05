@@ -3,7 +3,7 @@ import { ethers } from 'hardhat';
 async function main() {
 	const subscriptionId = 6889;
 	const maxLevel = 100;
-	let xpToLevelUp = [100000];
+	let xpToLevelUp = [10000];
 
 	for (let i = 1; i < maxLevel; i++) {
 		let increaseRate;

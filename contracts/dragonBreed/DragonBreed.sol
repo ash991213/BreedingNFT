@@ -34,33 +34,33 @@ contract DragonBreed {
         _;
     }
 
-    constructor(address _dragonNft, address _dragonRental, address _operator) {
+    constructor(address _operator, address _dragonNft, address _dragonRental) {
+        operator = IOperator(_operator);
         dragonNft = IDragonNFT(_dragonNft);
         dragonRental = IDragonRental(_dragonRental);
-        operator = IOperator(_operator);
         rarityBasedExperience = dragonNft.getRarityBasedExperience();
         speciesCountPerRarity = dragonNft.getSpeciesCountPerRarity();
         rarityBasedDamage = dragonNft.getRarityBasedDamage();
     }
 
     // 드래곤을 교배하여 새로운 드래곤을 생성합니다.
-    function breedDragons(address requester, uint256 parent1TokenId, uint256 parent2TokenId, uint256[] memory _randomWords) external onlyOperator {
+    function breedDragons(address requester, uint256 parent1TokenId, uint256 parent2TokenId, uint256[] memory _randomWords, uint256 _rentedDragonTokenId) external onlyOperator {
         DragonNFTLib.Gender gender = _randomWords[0].determineGender();
-        DragonNFTLib.Rarity rarity = determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
+        DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
         DragonNFTLib.Species species = _randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
         uint16 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
         uint8 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
 
         uint256 tokenId = dragonNft.createDragon(requester, gender, rarity, species, damage, xpPerSec);
-        updateLastBreedingTime(parent1TokenId, parent2TokenId);
+        _updateLastBreedingTime(parent1TokenId, parent2TokenId);
 
-        dragonRental.cancelRental(tokenId);
+        dragonRental.cancelRental(_rentedDragonTokenId);
 
         emit DragonBred(parent1TokenId, parent2TokenId, tokenId);
     }
 
     // 두 부모 드래곤의 희귀도를 비교하여 자식 드래곤의 희귀도를 결정합니다.
-    function determineBreedingRarity(uint256 parent1TokenId, uint256 parent2TokenId, uint256 randomValue) internal view returns(DragonNFTLib.Rarity) {
+    function _determineBreedingRarity(uint256 parent1TokenId, uint256 parent2TokenId, uint256 randomValue) internal view returns(DragonNFTLib.Rarity) {
         DragonNFTLib.Rarity higherRarity;
         DragonNFTLib.Rarity lowerRarity;
         (higherRarity, lowerRarity) = _compareRarities(parent1TokenId, parent2TokenId);
@@ -118,7 +118,7 @@ contract DragonBreed {
     }
 
     // 마지막 교배 시간을 업데이트합니다.
-    function updateLastBreedingTime(uint256 parent1TokenId, uint256 parent2TokenId) internal {
+    function _updateLastBreedingTime(uint256 parent1TokenId, uint256 parent2TokenId) internal {
         lastBreedingTime[parent1TokenId] = block.timestamp;
         lastBreedingTime[parent2TokenId] = block.timestamp;
     }

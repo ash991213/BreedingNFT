@@ -19,9 +19,9 @@ contract DragonRental {
     event DragonRented(uint256 indexed tokenId, address indexed renter, uint256 duration);
     event DragonRentalCancelled(uint256 indexed tokenId, address indexed renter, uint256 cancledTime);
 
-    constructor(address _dragonNft, address _operator) {
-        dragonNft = IDragonNFT(_dragonNft);
+    constructor(address _operator, address _dragonNft) {
         operator = IOperator(_operator);
+        dragonNft = IDragonNFT(_dragonNft);
     }
 
     // 드래곤을 대여합니다.
@@ -46,6 +46,7 @@ contract DragonRental {
         require(dragonRentals[tokenId].renter == msg.sender || operator.isOperator(msg.sender), "DragonRental: Not renter or Operator.");
         require(isRentalActive(tokenId), "DragonRental: Rental not active.");
 
+        address renter = dragonRentals[tokenId].renter;
         delete dragonRentals[tokenId];
 
         for (uint256 i = 0; i < rentedDragons.length; i++) {
@@ -56,7 +57,7 @@ contract DragonRental {
             }
         }
 
-        emit DragonRentalCancelled(tokenId, dragonRentals[tokenId].renter, block.timestamp);
+        emit DragonRentalCancelled(tokenId, renter, block.timestamp);
     }
 
     // 현재 대여 중인 드래곤 목록 조회
@@ -64,23 +65,10 @@ contract DragonRental {
         return rentedDragons;
     }
 
-    // 특정 드래곤이 호출자에 의해 소유되었거나 현재 대여중인지 확인합니다.
-    function isDragonOwnedOrRentedBySender(uint256 tokenId) external view returns (bool) {
-        return getDragonRental(tokenId).isRented ?
-                isRentalActive(tokenId) && isRenter(tokenId, msg.sender) :
-                dragonNft.ownerOf(tokenId) == msg.sender;
-    }
-
     // 드래곤이 대여 가능한 상태인지 확인합니다.
     function isRentalActive(uint256 tokenId) public view returns (bool) {
         DragonRentalLib.DragonRental memory rental = dragonRentals[tokenId];
         return rental.isRented && (block.timestamp - rental.startTime) <= rental.duration;
-    }
-
-    // 유저가 드래곤 대여자인지 확인합니다.
-    function isRenter(uint256 tokenId, address user) internal view returns (bool) {
-        DragonRentalLib.DragonRental memory rental = dragonRentals[tokenId];
-        return rental.isRented && rental.renter == user;
     }
 
     // 드래곤 대여 정보를 반환합니다.

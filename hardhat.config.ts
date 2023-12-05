@@ -9,6 +9,7 @@ const config: HardhatUserConfig = {
 			url: `http://127.0.0.1:8545`,
 			gas: 'auto',
 			gasPrice: 10e9,
+			blockGasLimit: 1500000000000,
 		},
 		sepolia: {
 			url: `https://sepolia.infura.io/v3/${String(process.env.SEPOLIA_API_KEY)}`,

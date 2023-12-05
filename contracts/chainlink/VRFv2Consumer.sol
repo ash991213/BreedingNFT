@@ -29,7 +29,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     bytes32 constant keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
 
     // 콜백 함수 가스 한도
-    uint32 callbackGasLimit = 1000000;
+    uint32 callbackGasLimit = 500000;
 
     // Request Confirm 횟수 -> 높일 시 더 안정적으로 랜덤값을 가져오지만 속도가 오래걸림 평균 - 3
     uint16 requestConfirmations = 3;
@@ -83,8 +83,8 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     /**
      * HARDCODED FOR SEPOLIA COORDINATOR: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
      */
-    constructor(uint64 subscriptionId, address _dragonNft, address _dragonRental, address _dragonBreed, address _coordinator) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) {
-        COORDINATOR = VRFCoordinatorV2Interface(_coordinator);
+    constructor(uint64 subscriptionId, address _dragonNft, address _dragonRental, address _dragonBreed) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) {
+        COORDINATOR = VRFCoordinatorV2Interface(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625);
         s_subscriptionId = subscriptionId;
         dragonNft = IDragonNFT(_dragonNft);
         dragonRental = IDragonRental(_dragonRental);
@@ -100,29 +100,36 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     // 드래곤을 교배시키는 함수입니다.
     function breedDragons(uint256 parent1TokenId, uint256 parent2TokenId) external payable returns (uint256 requestId) {
         require(msg.value == DragonBreedLib.BREEDING_FEE, "DragonBreed : Incorrect ETH amount");
-        require(dragonRental.isDragonOwnedOrRentedBySender(parent1TokenId) && dragonRental.isDragonOwnedOrRentedBySender(parent2TokenId), "DragonBreed : At least one dragon must be owned or rented by the caller.");
 
+        // 각 드래곤의 소유자 또는 대여 상태 확인
+        bool isParent1OwnedOrRented = dragonNft.ownerOf(parent1TokenId) == msg.sender || dragonRental.isRentalActive(parent1TokenId);
+        bool isParent2OwnedOrRented = dragonNft.ownerOf(parent2TokenId) == msg.sender || dragonRental.isRentalActive(parent2TokenId);
+        require(isParent1OwnedOrRented && isParent2OwnedOrRented, "DragonBreed : Both dragons must be owned or rented by the caller.");
+        // 두 드래곤이 모두 대여인경우 상태인 경우 교배 불가
+        require(!(dragonRental.isRentalActive(parent1TokenId) && dragonRental.isRentalActive(parent2TokenId)), "DragonBreed : Both dragons cannot be rented");
+
+        // 드래곤의 성별 확인
         DragonNFTLib.Gender parent1Gender = dragonNft.getDragonInfo(parent1TokenId).gender;
         DragonNFTLib.Gender parent2Gender = dragonNft.getDragonInfo(parent2TokenId).gender;
         require(parent1Gender != parent2Gender, "DragonBreed : Dragons must be of different genders");
 
+        // 교배 쿨다운 확인
         uint256 parent1LastBreedingTime = dragonBreed.getLastBreedingTime(parent1TokenId);
         uint256 parent2LastBreedingTime = dragonBreed.getLastBreedingTime(parent2TokenId);
         require(block.timestamp >= parent1LastBreedingTime + DragonBreedLib.BREEDING_COOL_DOWN && block.timestamp >= parent2LastBreedingTime + DragonBreedLib.BREEDING_COOL_DOWN, "DragonBreed : Breeding cooldown active");
 
+        // 대여한 드래곤 확인
         uint256 rentedDragonTokenId;
         bool isParent1Rented = !(dragonNft.ownerOf(parent1TokenId) == msg.sender);
         bool isParent2Rented = !(dragonNft.ownerOf(parent2TokenId) == msg.sender);
-
-        // 두 드래곤이 모두 렌트된 경우 교배를 허용하지 않습니다.
-        require(!(isParent1Rented && isParent2Rented), "DragonBreed : Both dragons cannot be rented");
-
+        
         if(isParent1Rented && isParent2Rented) {
             rentedDragonTokenId = 0;
         } else {
             rentedDragonTokenId = isParent1Rented ? parent1TokenId : parent2TokenId;
         }
-        
+
+        // 교배 요청 처리
         return requestRandomWordsForPurpose(RequestPurpose.BREEDING, parent1TokenId, parent2TokenId, rentedDragonTokenId);
     }
 

@@ -69,7 +69,7 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     mapping(uint256 => DragonBreedingPair) public breedingRequests;
 
     event RequestSent(uint256 requestId, uint32 numWords);
-    event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+    event RequestFulfilled(uint256 requestId, uint256[] randomWords, RequestPurpose requestPurpose);
 
     /**
      * @notice It just for local test.
@@ -97,29 +97,36 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     // 드래곤을 교배시키는 함수입니다.
     function breedDragons(uint256 parent1TokenId, uint256 parent2TokenId) external payable returns (uint256 requestId) {
         require(msg.value == DragonBreedLib.BREEDING_FEE, "DragonBreed : Incorrect ETH amount");
-        require(dragonRental.isDragonOwnedOrRentedBySender(parent1TokenId) && dragonRental.isDragonOwnedOrRentedBySender(parent2TokenId), "DragonBreed : At least one dragon must be owned or rented by the caller.");
 
+        // 각 드래곤의 소유자 또는 대여 상태 확인
+        bool isParent1OwnedOrRented = dragonNft.ownerOf(parent1TokenId) == msg.sender || dragonRental.isRentalActive(parent1TokenId);
+        bool isParent2OwnedOrRented = dragonNft.ownerOf(parent2TokenId) == msg.sender || dragonRental.isRentalActive(parent2TokenId);
+        require(isParent1OwnedOrRented && isParent2OwnedOrRented, "DragonBreed : Both dragons must be owned or rented by the caller.");
+        // 두 드래곤이 모두 대여인경우 상태인 경우 교배 불가
+        require(!(dragonRental.isRentalActive(parent1TokenId) && dragonRental.isRentalActive(parent2TokenId)), "DragonBreed : Both dragons cannot be rented");
+
+        // 드래곤의 성별 확인
         DragonNFTLib.Gender parent1Gender = dragonNft.getDragonInfo(parent1TokenId).gender;
         DragonNFTLib.Gender parent2Gender = dragonNft.getDragonInfo(parent2TokenId).gender;
         require(parent1Gender != parent2Gender, "DragonBreed : Dragons must be of different genders");
 
+        // 교배 쿨다운 확인
         uint256 parent1LastBreedingTime = dragonBreed.getLastBreedingTime(parent1TokenId);
         uint256 parent2LastBreedingTime = dragonBreed.getLastBreedingTime(parent2TokenId);
         require(block.timestamp >= parent1LastBreedingTime + DragonBreedLib.BREEDING_COOL_DOWN && block.timestamp >= parent2LastBreedingTime + DragonBreedLib.BREEDING_COOL_DOWN, "DragonBreed : Breeding cooldown active");
 
+        // 대여한 드래곤 확인
         uint256 rentedDragonTokenId;
         bool isParent1Rented = !(dragonNft.ownerOf(parent1TokenId) == msg.sender);
         bool isParent2Rented = !(dragonNft.ownerOf(parent2TokenId) == msg.sender);
-
-        // 두 드래곤이 모두 렌트된 경우 교배를 허용하지 않습니다.
-        require(!(isParent1Rented && isParent2Rented), "DragonBreed : Both dragons cannot be rented");
-
+        
         if(isParent1Rented && isParent2Rented) {
             rentedDragonTokenId = 0;
         } else {
             rentedDragonTokenId = isParent1Rented ? parent1TokenId : parent2TokenId;
         }
-        
+
+        // 교배 요청 처리
         return requestRandomWordsForPurpose(RequestPurpose.BREEDING, parent1TokenId, parent2TokenId, rentedDragonTokenId);
     }
 
@@ -170,7 +177,7 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
             dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
         }
 
-        emit RequestFulfilled(_requestId, _randomWords);
+        emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].requestPurpose);
     }
 
     // 스마트 컨트랙트에 저장된 이더리움을 스마트 컨트랙트 소유자에게 전송합니다.
@@ -178,9 +185,5 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
         uint256 balance = address(this).balance;
         require(balance > 0, "DragonBreed : No ETH to withdraw");
         payable(msg.sender).transfer(balance);
-    }
-
-    function getRandomWords() external view returns(uint256[] memory randomWords) {
-        return s_randomWords;
     }
 }

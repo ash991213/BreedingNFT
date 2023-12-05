@@ -27,7 +27,6 @@ contract DragonNFT is ERC721, Ownable {
     // 사용자가 보유한 드래곤 목록
     mapping(address => uint256[]) private ownedTokens;
 
-    // ?
     mapping(uint256 => uint256) private ownedTokensIndex;
 
     // 희귀도별 경험치 획득량, 확률 가중치, 데미지
@@ -172,6 +171,14 @@ contract DragonNFT is ERC721, Ownable {
     // 토큰을 새로운 주소로 전송할 때 호출됩니다.
     function _transfer(address from, address to, uint256 tokenId) internal override {
         super._transfer(from, to, tokenId);
+
+        // 소유자 변경 처리
+        removeTokenFromOwnerEnumeration(from, tokenId);
+        addTokenToOwnerEnumeration(to, tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public override {
+        super.transferFrom(from, to, tokenId);
 
         // 소유자 변경 처리
         removeTokenFromOwnerEnumeration(from, tokenId);
