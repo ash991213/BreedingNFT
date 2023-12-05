@@ -1,3 +1,3 @@
 - 테스트 코드 작성
-- Ganache에서 사용할 수 있는 로컬 VRFCoordinatorV2Mock 연결 후 requestRandomWords 테스트
+- DragonBreed 컨트랙트 대여 수수료 지급하는 함수 수정
 - Ganache 테스트 완료 후 Sepolia 네트워크에서 loadFixture 사용
