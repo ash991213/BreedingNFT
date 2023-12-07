@@ -51,10 +51,10 @@ describe('DragonNftTest', function () {
 		dragonNFT = await DragonNFT.connect(owner).deploy(maxLevel, xpToLevelUp, operatorManager.address);
 		await dragonNFT.deployed();
 
-		dragonRental = await DragonRental.connect(owner).deploy(dragonNFT.address, operatorManager.address);
+		dragonRental = await DragonRental.connect(owner).deploy(operatorManager.address, dragonNFT.address);
 		await dragonRental.deployed();
 
-		dragonBreed = await DragonBreed.connect(owner).deploy(dragonNFT.address, dragonRental.address, operatorManager.address);
+		dragonBreed = await DragonBreed.connect(owner).deploy(operatorManager.address, dragonNFT.address, dragonRental.address);
 		await dragonBreed.deployed();
 
 		testVRFCoordinatorV2Mock = await TestVRFCoordinatorV2Mock.connect(owner).deploy();
@@ -114,7 +114,7 @@ describe('DragonNftTest', function () {
 
 		it('should transfer a dragon from owner to user1', async () => {
 			const [ownersDragon] = await dragonNFT.getOwnedTokens(owner.getAddress());
-			await dragonNFT.transferFrom(owner.getAddress(), user1.getAddress(), ownersDragon);
+			await dragonNFT.connect(owner).transferFrom(owner.getAddress(), user1.getAddress(), ownersDragon);
 
 			const user1Balance = await dragonNFT.balanceOf(user1.getAddress());
 			const user1Dragon = await dragonNFT.getOwnedTokens(user1.getAddress());
@@ -238,18 +238,18 @@ describe('DragonNftTest', function () {
 		});
 
 		it('breedDragons', async () => {
-			let ownersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+			const ownersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
 			const [user1Dragon] = await dragonNFT.getOwnedTokens(user1.getAddress());
+			console.log(await dragonNFT.getOwnedTokens(owner.getAddress()));
 
 			const transactionBreed = await testVRFv2Consumer.connect(owner).breedDragons(ownersDragon[ownersDragon.length - 1], user1Dragon, { value: ethers.utils.parseEther('1') });
 			const receiptTxBreed = await transactionBreed.wait();
 			const requestSentEvent = receiptTxBreed.events.find((e: any) => e.event === 'RequestSent');
 
 			const transactionRandomWords = await testVRFCoordinatorV2Mock.fulfillRandomWords(requestSentEvent.args.requestId, testVRFv2Consumer.address);
-			const receiptTxRandomWords = await transactionRandomWords.wait();
-			console.log(receiptTxRandomWords.events.find((e: any) => e.event === 'RandomWordsFulfilled'));
+			await transactionRandomWords.wait();
 
-			// ownersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+			console.log(await dragonNFT.getOwnedTokens(owner.getAddress()));
 		});
 	});
 });

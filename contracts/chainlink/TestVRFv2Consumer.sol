@@ -173,11 +173,16 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
         if(s_requests[_requestId].requestPurpose == RequestPurpose.MINTING) {
             dragonNft.mintNewDragon(s_requests[_requestId].requester, _randomWords);
         } else if(s_requests[_requestId].requestPurpose == RequestPurpose.BREEDING) {
-            dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords);
-            dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
+            dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords);   
+            // (address owner, uint256 rentalFee) = dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
+            // _distributeFee(owner, rentalFee);
         }
+        // emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].requestPurpose);
+    }
 
-        emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].requestPurpose);
+    // 주어진 주소로 수수료를 전송합니다.
+    function _distributeFee(address owner, uint256 rentalFee) private {
+        payable(owner).transfer(DragonBreedLib.BREEDING_FEE - rentalFee);
     }
 
     // 스마트 컨트랙트에 저장된 이더리움을 스마트 컨트랙트 소유자에게 전송합니다.

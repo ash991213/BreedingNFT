@@ -44,23 +44,24 @@ contract DragonBreed {
     }
 
     // 드래곤을 교배하여 새로운 드래곤을 생성합니다.
+    // ! 대여한 드래곤이 어떤건지 알아야 함
     function breedDragons(address requester, uint256 parent1TokenId, uint256 parent2TokenId, uint256[] memory _randomWords, uint256 _rentedDragonTokenId) external onlyOperator {
         DragonNFTLib.Gender gender = _randomWords[0].determineGender();
-        DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
+        // DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
+        DragonNFTLib.Rarity rarity = DragonNFTLib.Rarity.COMMON;
         DragonNFTLib.Species species = _randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
         uint16 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
         uint8 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
 
         uint256 tokenId = dragonNft.createDragon(requester, gender, rarity, species, damage, xpPerSec);
-        _updateLastBreedingTime(parent1TokenId, parent2TokenId);
+        // _updateLastBreedingTime(parent1TokenId, parent2TokenId);
 
-        dragonRental.cancelRental(_rentedDragonTokenId);
-
+        // dragonRental.cancelRental(_rentedDragonTokenId);
         emit DragonBred(parent1TokenId, parent2TokenId, tokenId);
     }
 
     // 두 부모 드래곤의 희귀도를 비교하여 자식 드래곤의 희귀도를 결정합니다.
-    function _determineBreedingRarity(uint256 parent1TokenId, uint256 parent2TokenId, uint256 randomValue) internal view returns(DragonNFTLib.Rarity) {
+    function _determineBreedingRarity(uint256 parent1TokenId, uint256 parent2TokenId, uint256 randomValue) private view returns(DragonNFTLib.Rarity) {
         DragonNFTLib.Rarity higherRarity;
         DragonNFTLib.Rarity lowerRarity;
         (higherRarity, lowerRarity) = _compareRarities(parent1TokenId, parent2TokenId);
@@ -76,19 +77,14 @@ contract DragonBreed {
     }
 
     // 두 드래곤의 희귀도를 비교합니다.
-    function _compareRarities(uint256 parent1TokenId, uint256 parent2TokenId) internal view returns (DragonNFTLib.Rarity, DragonNFTLib.Rarity) {
+    function _compareRarities(uint256 parent1TokenId, uint256 parent2TokenId) private view returns (DragonNFTLib.Rarity, DragonNFTLib.Rarity) {
         DragonNFTLib.Rarity rarity1 = dragonNft.getDragonInfo(parent1TokenId).rarity;
         DragonNFTLib.Rarity rarity2 = dragonNft.getDragonInfo(parent2TokenId).rarity;
         return (rarity1 < rarity2 ? rarity2 : rarity1, rarity1 < rarity2 ? rarity1 : rarity2);
     }
 
-    // 드래곤 교배에 대한 수수료를 분배합니다.
-    function distributeBreedingFee(uint256 parent1TokenId, uint256 parent2TokenId) external onlyOperator {
-        _transferFee(parent1TokenId, parent2TokenId);
-    }
-
-    // 두 부모 드래곤에 대한 수수료를 계산하고 이를 각 부모 드래곤의 소유자에게 전송합니다.
-    function _transferFee(uint256 parent1TokenId, uint256 parent2TokenId) internal {
+    // 대여한 드래곤의 주인과 대여에 대한 수수료 금액을 반환합니다.
+    function distributeBreedingFee(uint256 parent1TokenId, uint256 parent2TokenId) external view onlyOperator returns(address owner, uint256 rentalFee) {
         address owner1 = dragonNft.ownerOf(parent1TokenId);
         address owner2 = dragonNft.ownerOf(parent2TokenId);
 
@@ -96,14 +92,14 @@ contract DragonBreed {
         (bool isParent2Rented, uint256 rentalFee2) = _calculateRentalFee(parent2TokenId);
 
         if (isParent1Rented && !isParent2Rented) {
-            _distributeFee(owner1, rentalFee1);
+            return (owner1, rentalFee1);
         } else if (isParent2Rented && !isParent1Rented) {
-            _distributeFee(owner2, rentalFee2);
+            return (owner2, rentalFee2);
         }
     }
 
     // 주어진 드래곤의 대여 수수료를 계산합니다.
-    function _calculateRentalFee(uint256 tokenId) internal view returns (bool isRented, uint256 rentalFee) {
+    function _calculateRentalFee(uint256 tokenId) private view returns (bool isRented, uint256 rentalFee) {
         DragonRentalLib.DragonRental memory rentalInfo = dragonRental.getDragonRental(tokenId);
         if (rentalInfo.isRented && dragonRental.isRentalActive(tokenId)) {
             rentalFee = DragonBreedLib.BREEDING_FEE * DragonRentalLib.RENTAL_FEE_PERCENTAGE / 100;
@@ -112,19 +108,14 @@ contract DragonBreed {
         return (false, 0);
     }
 
-    // 주어진 주소로 수수료를 전송합니다.
-    function _distributeFee(address owner, uint256 rentalFee) internal {
-        payable(owner).transfer(DragonBreedLib.BREEDING_FEE - rentalFee);
-    }
-
     // 마지막 교배 시간을 업데이트합니다.
-    function _updateLastBreedingTime(uint256 parent1TokenId, uint256 parent2TokenId) internal {
+    function _updateLastBreedingTime(uint256 parent1TokenId, uint256 parent2TokenId) private {
         lastBreedingTime[parent1TokenId] = block.timestamp;
         lastBreedingTime[parent2TokenId] = block.timestamp;
     }
 
     // 드래곤의 마지막 교배 시간을 반환합니다.
-    function getLastBreedingTime(uint256 tokenId) public view returns(uint256) {
+    function getLastBreedingTime(uint256 tokenId) external view returns(uint256) {
         return lastBreedingTime[tokenId];
     }
 }

@@ -179,7 +179,6 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
             dragonNft.mintNewDragon(s_requests[_requestId].requester, _randomWords);
         } else if(s_requests[_requestId].requestPurpose == RequestPurpose.BREEDING) {
             dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords);
-            dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
         }
 
         emit RequestFulfilled(_requestId, _randomWords);

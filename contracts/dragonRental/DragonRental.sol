@@ -53,15 +53,14 @@ contract DragonRental {
             if (rentedDragons[i] == tokenId) {
                 rentedDragons[i] = rentedDragons[rentedDragons.length - 1];
                 rentedDragons.pop();
+                emit DragonRentalCancelled(tokenId, renter, block.timestamp);
                 break;
             }
         }
-
-        emit DragonRentalCancelled(tokenId, renter, block.timestamp);
     }
 
     // 현재 대여 중인 드래곤 목록 조회
-    function getCurrentlyRentedDragons() public view returns (uint256[] memory) {
+    function getCurrentlyRentedDragons() external view returns (uint256[] memory) {
         return rentedDragons;
     }
 
@@ -72,7 +71,7 @@ contract DragonRental {
     }
 
     // 드래곤 대여 정보를 반환합니다.
-    function getDragonRental(uint256 tokenId) public view returns(DragonRentalLib.DragonRental memory dragonRental) {
+    function getDragonRental(uint256 tokenId) external view returns(DragonRentalLib.DragonRental memory dragonRental) {
         return dragonRentals[tokenId];
     }
 }
