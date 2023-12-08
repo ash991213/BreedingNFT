@@ -43,8 +43,8 @@ contract DragonBreed {
         rarityBasedDamage = dragonNft.getRarityBasedDamage();
     }
 
+    /**
     // 드래곤을 교배하여 새로운 드래곤을 생성합니다.
-    // ! 대여한 드래곤이 어떤건지 알아야 함
     function breedDragons(address requester, uint256 parent1TokenId, uint256 parent2TokenId, uint256[] memory _randomWords, uint256 _rentedDragonTokenId) external onlyOperator {
         DragonNFTLib.Gender gender = _randomWords[0].determineGender();
         // DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
@@ -58,6 +58,24 @@ contract DragonBreed {
 
         // dragonRental.cancelRental(_rentedDragonTokenId);
         emit DragonBred(parent1TokenId, parent2TokenId, tokenId);
+    }
+     */
+
+    function breedDragons(address requester, uint256[] memory _randomWords) external {
+        // DragonNFTLib.Gender gender = _randomWords[0].determineGender();
+        // DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
+        // DragonNFTLib.Rarity rarity = DragonNFTLib.Rarity.COMMON;
+        // DragonNFTLib.Species species = _randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
+        // uint16 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
+        // uint8 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
+
+        // dragonNft.createDragon(requester, gender, rarity, species, damage, xpPerSec);
+        // dragonNft.mintNewDragon(requester, _randomWords);
+        dragonNft.createDragon(requester, DragonNFTLib.Gender.MALE, DragonNFTLib.Rarity.COMMON, DragonNFTLib.Species.FIRE_DRAGON, 160, 12);
+        // _updateLastBreedingTime(parent1TokenId, parent2TokenId);
+
+        // dragonRental.cancelRental(_rentedDragonTokenId);
+        // emit DragonBred(parent1TokenId, parent2TokenId, tokenId);
     }
 
     // 두 부모 드래곤의 희귀도를 비교하여 자식 드래곤의 희귀도를 결정합니다.

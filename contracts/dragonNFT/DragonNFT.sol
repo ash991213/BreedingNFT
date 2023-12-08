@@ -71,8 +71,8 @@ contract DragonNFT is ERC721, Ownable {
 
     // 드래곤 NFT를 생성합니다.
     function createDragon(address _to, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint16 _damage, uint8 _xpPerSec) public onlyOperator returns(uint256 tokenId) {
-        uint256 _tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
+        uint256 _tokenId = _tokenIdCounter.current();
 
         dragons[_tokenId] = DragonNFTLib.Dragon({
             gender : _gender,

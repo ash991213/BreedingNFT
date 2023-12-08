@@ -68,7 +68,7 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     // Request Id에 연결된 부모 드래곤 tokenId
     mapping(uint256 => DragonBreedingPair) public breedingRequests;
 
-    event RequestSent(uint256 requestId, uint32 numWords);
+    event RequestSent(uint256 requestId, uint32 numWords, RequestPurpose requestPurpose, uint256 rentedDragonTokenId);
     event RequestFulfilled(uint256 requestId, uint256[] randomWords, RequestPurpose requestPurpose);
 
     /**
@@ -160,7 +160,7 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
             });
         }
 
-        emit RequestSent(requestId, numWords);
+        emit RequestSent(requestId, numWords, _purpose, _rentedDragonTokenId);
         return requestId;
     }
 
@@ -173,11 +173,12 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
         if(s_requests[_requestId].requestPurpose == RequestPurpose.MINTING) {
             dragonNft.mintNewDragon(s_requests[_requestId].requester, _randomWords);
         } else if(s_requests[_requestId].requestPurpose == RequestPurpose.BREEDING) {
-            dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords);   
+            dragonBreed.breedDragons(s_requests[_requestId].requester, _randomWords);
+            // dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords, s_requests[_requestId].rentedDragonTokenId);
             // (address owner, uint256 rentalFee) = dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
             // _distributeFee(owner, rentalFee);
         }
-        // emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].requestPurpose);
+        emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].requestPurpose);
     }
 
     // 주어진 주소로 수수료를 전송합니다.

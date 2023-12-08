@@ -221,6 +221,7 @@ describe('DragonNftTest', function () {
 			await transactionRentDragon.wait();
 
 			const dragonInfo = await dragonNFT.getDragonInfo(user1Dragon);
+			console.log(dragonInfo);
 			const dragon1Gender = dragonInfo.gender;
 			let dragon2Gender;
 
@@ -245,6 +246,7 @@ describe('DragonNftTest', function () {
 			const transactionBreed = await testVRFv2Consumer.connect(owner).breedDragons(ownersDragon[ownersDragon.length - 1], user1Dragon, { value: ethers.utils.parseEther('1') });
 			const receiptTxBreed = await transactionBreed.wait();
 			const requestSentEvent = receiptTxBreed.events.find((e: any) => e.event === 'RequestSent');
+			console.log(requestSentEvent);
 
 			const transactionRandomWords = await testVRFCoordinatorV2Mock.fulfillRandomWords(requestSentEvent.args.requestId, testVRFv2Consumer.address);
 			await transactionRandomWords.wait();
