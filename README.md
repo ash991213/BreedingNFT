@@ -2,6 +2,10 @@
 
 -   테스트 코드 작성
 
+-   드래곤 교배 시 희귀도 설정 함수 재확인
+
+-   드래곤 교배 후 드래곤 대여자에게 수수료 지급 확인
+
 -   Ganache 테스트 완료 후 Sepolia 네트워크에서 loadFixture 사용
 
 ## ISSUE
@@ -28,3 +32,11 @@ function createDragon(address _to, DragonNFTLib.Gender _gender, DragonNFTLib.Rar
 
 차후 대처 계획 :
 Slither와 같은 정적 스마트 컨트랙트 분석 도구 사용
+
+2. Chainlink VRF의 로컬 테스트 환경에서는 체인링크 VRF 노드가 존재하지 않아 실제와 같은 랜덤값을 생성하는데 어려움이 있음
+
+예 : local에서 ganache를 사용해서 테스트시 테스트 실행마다 랜덤값이 동일하여 같은 등급, 종류, 데미지의 드래곤이 생성됨
+
+해결 방안 :
+
+local에서 모든 함수에 대한 테스트를 마친 후 공개 테스트넷(ex : Sepolia, Mumbai)에서 철저하게 테스트 예정(Chainlink에서도 이를 권장함)

@@ -173,11 +173,9 @@ contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
         if(s_requests[_requestId].requestPurpose == RequestPurpose.MINTING) {
             dragonNft.mintNewDragon(s_requests[_requestId].requester, _randomWords);
         } else if(s_requests[_requestId].requestPurpose == RequestPurpose.BREEDING) {
-            dragonNft.mintNewDragon(s_requests[_requestId].requester, _randomWords);
-            // dragonBreed.breedDragons(s_requests[_requestId].requester, _randomWords);
-            // dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords, s_requests[_requestId].rentedDragonTokenId);
-            // (address owner, uint256 rentalFee) = dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
-            // _distributeFee(owner, rentalFee);
+            dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords, s_requests[_requestId].rentedDragonTokenId);
+            (address owner, uint256 rentalFee) = dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
+            _distributeFee(owner, rentalFee);
         }
         emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].requestPurpose);
     }

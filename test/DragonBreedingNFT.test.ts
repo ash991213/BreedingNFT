@@ -221,11 +221,11 @@ describe('DragonNftTest', function () {
 			await transactionRentDragon.wait();
 
 			const dragonInfo = await dragonNFT.getDragonInfo(user1Dragon);
-			console.log(dragonInfo);
+
 			const dragon1Gender = dragonInfo.gender;
 			let dragon2Gender;
 
-			do {
+			while (dragon1Gender === dragon2Gender) {
 				const transactionMint = await testVRFv2Consumer.connect(owner).mintNewDragon({ value: ethers.utils.parseEther('1') });
 				const receiptTxMint = await transactionMint.wait();
 				const requestSentEvent = receiptTxMint.events.find((e: any) => e.event === 'RequestSent');
@@ -235,23 +235,54 @@ describe('DragonNftTest', function () {
 				const ownerDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
 				const dragonInfo = await dragonNFT.getDragonInfo(ownerDragon[ownerDragon.length - 1]);
 				dragon2Gender = dragonInfo.gender;
-			} while (dragon1Gender === dragon2Gender);
+			}
 		});
 
 		it('breedDragons', async () => {
+			const beforeOwnersBalance = await dragonNFT.balanceOf(owner.getAddress());
+			const beforeOwnersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+
 			const ownersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
 			const [user1Dragon] = await dragonNFT.getOwnedTokens(user1.getAddress());
-			console.log(await dragonNFT.getOwnedTokens(owner.getAddress()));
+
+			const dragonInfo1 = await dragonNFT.getDragonInfo(ownersDragon.length - 1);
+			const dragonInfo2 = await dragonNFT.getDragonInfo(user1Dragon);
+
+			console.log(dragonInfo1.rarity);
+			console.log(dragonInfo2.rarity);
 
 			const transactionBreed = await testVRFv2Consumer.connect(owner).breedDragons(ownersDragon[ownersDragon.length - 1], user1Dragon, { value: ethers.utils.parseEther('1') });
 			const receiptTxBreed = await transactionBreed.wait();
 			const requestSentEvent = receiptTxBreed.events.find((e: any) => e.event === 'RequestSent');
-			console.log(requestSentEvent);
 
 			const transactionRandomWords = await testVRFCoordinatorV2Mock.fulfillRandomWords(requestSentEvent.args.requestId, testVRFv2Consumer.address);
 			await transactionRandomWords.wait();
 
-			console.log(await dragonNFT.getOwnedTokens(owner.getAddress()));
+			const afterOwnersBalance = await dragonNFT.balanceOf(owner.getAddress());
+			const afterOwnersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+
+			expect(beforeOwnersBalance).to.be.equal(afterOwnersBalance - 1);
+			console.log(beforeOwnersBalance);
+			console.log(afterOwnersBalance);
+			expect(beforeOwnersDragon.length).to.be.equal(afterOwnersDragon.length - 1);
+			console.log(beforeOwnersDragon);
+			console.log(afterOwnersDragon);
+		});
+
+		it('breedDragon info', async () => {
+			const ownersNewDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+			console.log(ownersNewDragon);
+			// const dragonInfo = await dragonNFT.getDragonInfo(ownersNewDragon);
+
+			// console.log(dragonInfo.rarity);
+
+			// expect(dragonInfo.gender).to.satisfy((num: number) => num >= 0 && num < 2);
+			// expect(dragonInfo.rarity).to.satisfy((num: number) => num >= 0 && num < 3);
+			// expect(dragonInfo.specie).to.satisfy((num: number) => num >= 0 && num < 17);
+			// expect(dragonInfo.level).to.be.equal(1);
+			// expect(dragonInfo.xp).to.be.equal(0);
+			// expect(dragonInfo.damage).to.satisfy((num: number) => num >= 50 && num < 321);
+			// expect(dragonInfo.xpPerSec).to.satisfy((num: number) => num === 10 || num === 12 || num === 14);
 		});
 	});
 });
