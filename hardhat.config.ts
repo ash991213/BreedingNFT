@@ -11,11 +11,11 @@ const config: HardhatUserConfig = {
 			gasPrice: 10e9,
 			blockGasLimit: 1500000000000,
 		},
-		sepolia: {
-			url: `https://sepolia.infura.io/v3/${String(process.env.SEPOLIA_API_KEY)}`,
-			accounts: [String(process.env.PRIVATE_KEY)],
-			chainId: 11155111,
-		},
+		// sepolia: {
+		// 	url: `https://sepolia.infura.io/v3/${String(process.env.SEPOLIA_API_KEY)}`,
+		// 	accounts: [String(process.env.PRIVATE_KEY)],
+		// 	chainId: 11155111,
+		// },
 	},
 	etherscan: {
 		// yarn hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>
