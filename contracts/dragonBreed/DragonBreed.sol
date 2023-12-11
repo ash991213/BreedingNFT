@@ -46,8 +46,7 @@ contract DragonBreed {
     // 드래곤을 교배하여 새로운 드래곤을 생성합니다.
     function breedDragons(address requester, uint256 parent1TokenId, uint256 parent2TokenId, uint256[] memory _randomWords, uint256 _rentedDragonTokenId) external onlyOperator {
         DragonNFTLib.Gender gender = _randomWords[0].determineGender();
-        // DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
-        DragonNFTLib.Rarity rarity = DragonNFTLib.Rarity.MYTHICAL;
+        DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
         DragonNFTLib.Species species = _randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
         uint16 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
         uint8 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
@@ -66,14 +65,14 @@ contract DragonBreed {
         (higherRarity, lowerRarity) = _compareRarities(parent1TokenId, parent2TokenId);
 
         uint256 rand = randomValue % 100;
-        return DragonNFTLib.Rarity.MYTHICAL;
-        // if (rand < 1000) {
-        //     return higherRarity < DragonNFTLib.Rarity.MYTHICAL ? DragonNFTLib.Rarity(uint(higherRarity) + 1) : higherRarity;
-        // } else if (rand < 70) {
-        //     return higherRarity;
-        // } else {
-        //     return lowerRarity;
-        // }
+
+        if (rand > 74) {
+            return higherRarity < DragonNFTLib.Rarity.MYTHICAL ? DragonNFTLib.Rarity(uint(higherRarity) + 1) : higherRarity;
+        } else if (rand > 24) {
+            return higherRarity;
+        } else {
+            return lowerRarity;
+        }
     }
 
     // 두 드래곤의 희귀도를 비교합니다.

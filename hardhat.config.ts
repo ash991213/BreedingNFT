@@ -1,21 +1,27 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 import 'dotenv/config';
+import 'solidity-coverage';
 
 const config: HardhatUserConfig = {
-	defaultNetwork: 'ganache',
+	defaultNetwork: 'hardhat',
 	networks: {
 		ganache: {
 			url: `http://127.0.0.1:8545`,
 			gas: 'auto',
 			gasPrice: 10e9,
-			blockGasLimit: 1500000000000,
+			blockGasLimit: 200000,
 		},
-		// sepolia: {
-		// 	url: `https://sepolia.infura.io/v3/${String(process.env.SEPOLIA_API_KEY)}`,
-		// 	accounts: [String(process.env.PRIVATE_KEY)],
-		// 	chainId: 11155111,
-		// },
+		hardhat: {
+			gas: 'auto',
+			gasPrice: 10e9,
+			blockGasLimit: 10000000,
+		},
+		sepolia: {
+			url: `https://sepolia.infura.io/v3/${String(process.env.SEPOLIA_API_KEY)}`,
+			accounts: [String(process.env.PRIVATE_KEY)],
+			chainId: 11155111,
+		},
 	},
 	etherscan: {
 		// yarn hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>

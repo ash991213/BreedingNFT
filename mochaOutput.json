@@ -1,0 +1,294 @@
+{
+ "stats": {
+  "suites": 8,
+  "tests": 20,
+  "passes": 20,
+  "pending": 0,
+  "failures": 0
+ },
+ "tests": [
+  {
+   "title": "should match the rarity-based experience values with contract",
+   "fullTitle": "DragonNftTest DragonNFT should match the rarity-based experience values with contract",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should match the species count per rarity with contract",
+   "fullTitle": "DragonNftTest DragonNFT should match the species count per rarity with contract",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should match the rarity-based damage values with contract",
+   "fullTitle": "DragonNftTest DragonNFT should match the rarity-based damage values with contract",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should mint a new dragon successfully",
+   "fullTitle": "DragonNftTest VRFv2Consumer should mint a new dragon successfully",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should transfer a dragon from owner to user",
+   "fullTitle": "DragonNftTest VRFv2Consumer should transfer a dragon from owner to user",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should retrieve correct dragon information after transfer",
+   "fullTitle": "DragonNftTest VRFv2Consumer should retrieve correct dragon information after transfer",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should correctly calculate and add experience for one hour",
+   "fullTitle": "DragonNftTest VRFv2Consumer should correctly calculate and add experience for one hour",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should correctly set experience required for next level and emit event",
+   "fullTitle": "DragonNftTest VRFv2Consumer should correctly set experience required for next level and emit event",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should correctly mark a dragon as rented upon successful rental",
+   "fullTitle": "DragonNftTest DragonRental should correctly mark a dragon as rented upon successful rental",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should confirm that a rental is active for a dragon",
+   "fullTitle": "DragonNftTest DragonRental should confirm that a rental is active for a dragon",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should retrieve the list of currently rented dragons",
+   "fullTitle": "DragonNftTest DragonRental should retrieve the list of currently rented dragons",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should cancel a dragon rental and emit the appropriate event",
+   "fullTitle": "DragonNftTest DragonRental should cancel a dragon rental and emit the appropriate event",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "breedDragons",
+   "fullTitle": "DragonNftTest DragonBreed breedDragons",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "breedDragon info",
+   "fullTitle": "DragonNftTest DragonBreed breedDragon info",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Should set the right owner",
+   "fullTitle": "OperatorManager Contract Deployment Should set the right owner",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Owner should be an operator",
+   "fullTitle": "OperatorManager Contract Deployment Owner should be an operator",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Should add an operator",
+   "fullTitle": "OperatorManager Contract Manage Operators Should add an operator",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Should remove an operator",
+   "fullTitle": "OperatorManager Contract Manage Operators Should remove an operator",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Only owner can add operators",
+   "fullTitle": "OperatorManager Contract Manage Operators Only owner can add operators",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Only owner can remove operators",
+   "fullTitle": "OperatorManager Contract Manage Operators Only owner can remove operators",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  }
+ ],
+ "failures": [],
+ "passes": [
+  {
+   "title": "should match the rarity-based experience values with contract",
+   "fullTitle": "DragonNftTest DragonNFT should match the rarity-based experience values with contract",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should match the species count per rarity with contract",
+   "fullTitle": "DragonNftTest DragonNFT should match the species count per rarity with contract",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should match the rarity-based damage values with contract",
+   "fullTitle": "DragonNftTest DragonNFT should match the rarity-based damage values with contract",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should mint a new dragon successfully",
+   "fullTitle": "DragonNftTest VRFv2Consumer should mint a new dragon successfully",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should transfer a dragon from owner to user",
+   "fullTitle": "DragonNftTest VRFv2Consumer should transfer a dragon from owner to user",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should retrieve correct dragon information after transfer",
+   "fullTitle": "DragonNftTest VRFv2Consumer should retrieve correct dragon information after transfer",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should correctly calculate and add experience for one hour",
+   "fullTitle": "DragonNftTest VRFv2Consumer should correctly calculate and add experience for one hour",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should correctly set experience required for next level and emit event",
+   "fullTitle": "DragonNftTest VRFv2Consumer should correctly set experience required for next level and emit event",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should correctly mark a dragon as rented upon successful rental",
+   "fullTitle": "DragonNftTest DragonRental should correctly mark a dragon as rented upon successful rental",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should confirm that a rental is active for a dragon",
+   "fullTitle": "DragonNftTest DragonRental should confirm that a rental is active for a dragon",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should retrieve the list of currently rented dragons",
+   "fullTitle": "DragonNftTest DragonRental should retrieve the list of currently rented dragons",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "should cancel a dragon rental and emit the appropriate event",
+   "fullTitle": "DragonNftTest DragonRental should cancel a dragon rental and emit the appropriate event",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "breedDragons",
+   "fullTitle": "DragonNftTest DragonBreed breedDragons",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "breedDragon info",
+   "fullTitle": "DragonNftTest DragonBreed breedDragon info",
+   "file": "test/DragonBreedingNFT.test.hardhat.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Should set the right owner",
+   "fullTitle": "OperatorManager Contract Deployment Should set the right owner",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Owner should be an operator",
+   "fullTitle": "OperatorManager Contract Deployment Owner should be an operator",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Should add an operator",
+   "fullTitle": "OperatorManager Contract Manage Operators Should add an operator",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Should remove an operator",
+   "fullTitle": "OperatorManager Contract Manage Operators Should remove an operator",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Only owner can add operators",
+   "fullTitle": "OperatorManager Contract Manage Operators Only owner can add operators",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  },
+  {
+   "title": "Only owner can remove operators",
+   "fullTitle": "OperatorManager Contract Manage Operators Only owner can remove operators",
+   "file": "test/Operator.test.ts",
+   "currentRetry": 0,
+   "err": {}
+  }
+ ]
+}

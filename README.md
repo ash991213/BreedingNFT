@@ -1,12 +1,10 @@
 ## TODO
 
--   테스트 코드 작성
+- 테스트 코드 작성
 
--   드래곤 교배 시 희귀도 설정 함수 재확인
+- 드래곤 교배 후 드래곤 대여자에게 수수료 지급 확인
 
--   드래곤 교배 후 드래곤 대여자에게 수수료 지급 확인
-
--   Ganache 테스트 완료 후 Sepolia 네트워크에서 loadFixture 사용
+- Ganache 테스트 완료 후 Sepolia 네트워크에서 loadFixture 사용
 
 ## ISSUE
 
@@ -40,3 +38,15 @@ Slither와 같은 정적 스마트 컨트랙트 분석 도구 사용
 해결 방안 :
 
 local에서 모든 함수에 대한 테스트를 마친 후 공개 테스트넷(ex : Sepolia, Mumbai)에서 철저하게 테스트 예정(Chainlink에서도 이를 권장함)
+
+## TEST
+
+```bash
+npx hardhat test test/DragonBreedingNFT.test.hardhat.ts
+```
+
+## COVERAGE
+
+```bash
+ npx hardhat coverage  --show-stack-traces
+```
