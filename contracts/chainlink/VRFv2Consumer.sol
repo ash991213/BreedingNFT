@@ -68,6 +68,9 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     // Request Id에 연결된 부모 드래곤 tokenId
     mapping(uint256 => DragonBreedingPair) public breedingRequests;
 
+    // 사용자별로 인출할 수 있는 잔액을 추적합니다.
+    mapping(address => uint256) private pendingWithdrawals;
+
     event RequestSent(uint256 requestId, uint32 numWords, RequestPurpose requestPurpose, uint256 rentedDragonTokenId);
     event RequestFulfilled(uint256 requestId, uint256[] randomWords, RequestPurpose requestPurpose);
 
@@ -169,7 +172,10 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
         } else if(s_requests[_requestId].requestPurpose == RequestPurpose.BREEDING) {
             dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords, s_requests[_requestId].rentedDragonTokenId);
             (address owner, uint256 rentalFee) = dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
-            _distributeFee(owner, rentalFee);
+
+            // 수수료를 추적합니다.
+            uint256 fee = DragonBreedLib.BREEDING_FEE - rentalFee;
+            pendingWithdrawals[owner] += fee;
         }
         emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].requestPurpose);
     }
@@ -181,8 +187,11 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
 
     // 스마트 컨트랙트에 저장된 이더리움을 스마트 컨트랙트 소유자에게 전송합니다.
     function withdraw() external {
-        uint256 balance = address(this).balance;
-        require(balance > 0, "DragonBreed : No ETH to withdraw");
-        payable(msg.sender).transfer(balance);
+        uint256 amount = pendingWithdrawals[msg.sender];
+        require(amount > 0, "No funds available");
+
+        // 잔액을 0으로 설정하고 이더를 전송합니다.
+        pendingWithdrawals[msg.sender] = 0;
+        payable(msg.sender).transfer(amount);
     }
 }

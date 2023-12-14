@@ -1,0 +1,10 @@
+strict digraph {
+subgraph cluster_634_IDragonBreed {
+label = "IDragonBreed"
+"634_distributeBreedingFee" [label="distributeBreedingFee"]
+"634_getLastBreedingTime" [label="getLastBreedingTime"]
+"634_breedDragons" [label="breedDragons"]
+}subgraph cluster_solidity {
+label = "[Solidity]"
+}
+}

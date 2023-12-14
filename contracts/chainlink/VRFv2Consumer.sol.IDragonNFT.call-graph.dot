@@ -1,0 +1,17 @@
+strict digraph {
+subgraph cluster_728_IDragonNFT {
+label = "IDragonNFT"
+"728_mintNewDragon" [label="mintNewDragon"]
+"728_getDragonInfo" [label="getDragonInfo"]
+"728_getRarityBasedExperience" [label="getRarityBasedExperience"]
+"728_createDragon" [label="createDragon"]
+"728_getOwnedTokens" [label="getOwnedTokens"]
+"728_ownerOf" [label="ownerOf"]
+"728_getRarityBasedDamage" [label="getRarityBasedDamage"]
+"728_getSpeciesCountPerRarity" [label="getSpeciesCountPerRarity"]
+"728_addExperience" [label="addExperience"]
+"728_setXpToLevelUp" [label="setXpToLevelUp"]
+}subgraph cluster_solidity {
+label = "[Solidity]"
+}
+}

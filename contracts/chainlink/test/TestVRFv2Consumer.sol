@@ -7,13 +7,13 @@ import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 
 // * libraries
-import "../dragonNFT/library/DragonNFTLib.sol";
-import "../dragonBreed/library/DragonBreedLib.sol";
+import "../../dragonNFT/library/DragonNFTLib.sol";
+import "../../dragonBreed/library/DragonBreedLib.sol";
 
 // * interfaces 
-import "../dragonNFT/interface/IDragonNFT.sol";
-import "../dragonRental/interface/IDragonRental.sol";
-import "../dragonBreed/interface/IDragonBreed.sol";
+import "../../dragonNFT/interface/IDragonNFT.sol";
+import "../../dragonRental/interface/IDragonRental.sol";
+import "../../dragonBreed/interface/IDragonBreed.sol";
 
 contract TestVRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     IDragonNFT private dragonNft;

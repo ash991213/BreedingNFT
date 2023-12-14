@@ -50,3 +50,10 @@ npx hardhat test
 ```bash
 npx hardhat coverage  --show-stack-traces
 ```
+
+## Slither
+slither contracts/chainlink/VRFv2Consumer.sol --solc-remaps @openzeppelin=node_modules/@openzeppelin --solc-remaps @chainlink=node_modules/@chainlink 
+
+slither contracts/chainlink/VRFv2Consumer.sol --print call-graph --solc-remaps @openzeppelin=node_modules/@openzeppelin --solc-remaps @chainlink=node_modules/@chainlink
+
+slither contracts/chainlink/VRFv2Consumer.sol --print contract-summary,function-summary --solc-remaps @openzeppelin=node_modules/@openzeppelin --solc-remaps @chainlink=node_modules/@chainlink
