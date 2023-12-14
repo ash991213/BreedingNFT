@@ -2,7 +2,7 @@ import { ethers } from 'hardhat';
 import { Contract, Signer } from 'ethers';
 import { expect } from 'chai';
 
-describe('DragonRental', async () => {
+describe('DragonRental Test', async () => {
 	let operatorManager: Contract;
 	let dragonNFT: Contract;
 	let dragonRental: Contract;

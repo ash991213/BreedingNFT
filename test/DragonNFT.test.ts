@@ -3,7 +3,7 @@ import { Contract, Signer } from 'ethers';
 import { expect } from 'chai';
 import { time } from '@nomicfoundation/hardhat-network-helpers';
 
-describe('DragonNFT', async () => {
+describe('DragonNFT Test', async () => {
 	let operatorManager: Contract;
 	let dragonNFT: Contract;
 	let owner: Signer;

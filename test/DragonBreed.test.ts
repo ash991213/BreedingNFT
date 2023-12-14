@@ -2,7 +2,7 @@ import { ethers } from 'hardhat';
 import { Contract, Signer } from 'ethers';
 import { expect } from 'chai';
 
-describe('DragonBreed', async () => {
+describe('DragonBreed Test', async () => {
 	let operatorManager: Contract;
 	let dragonNFT: Contract;
 	let dragonRental: Contract;
@@ -108,7 +108,7 @@ describe('DragonBreed', async () => {
 		await expect(dragonBreed.connect(user).distributeBreedingFee(ownersDragon[ownersDragon.length - 1], userDragon)).to.be.revertedWith('DragonBreedingNFT : msg.sender is no a valid operator');
 	});
 
-	it('breedDragons', async () => {
+	it('should successfully breed dragons and update breeding times and balances', async () => {
 		const beforeOwnersBalance = await dragonNFT.balanceOf(owner.getAddress());
 		const beforeOwnersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
 
@@ -136,7 +136,7 @@ describe('DragonBreed', async () => {
 		expect(beforeOwnersDragon.length).to.be.equal(afterOwnersDragon.length - 1);
 	});
 
-	it('breedDragon info', async () => {
+	it('should verify new dragon attributes post-breeding', async () => {
 		const ownersNewDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
 		const dragonInfo = await dragonNFT.getDragonInfo(ownersNewDragon[ownersNewDragon.length - 1]);
 

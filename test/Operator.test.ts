@@ -10,7 +10,7 @@ const errException = async (promise: Promise<any>): Promise<any> => {
 	throw new Error('Expected throw not received');
 };
 
-describe('OperatorManager Contract', () => {
+describe('OperatorManager Test', () => {
 	let operatorManager;
 	let owner;
 	let addr1;
