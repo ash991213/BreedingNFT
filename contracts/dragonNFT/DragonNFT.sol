@@ -71,8 +71,8 @@ contract DragonNFT is ERC721, Ownable {
 
     // 드래곤 NFT를 생성합니다.
     function createDragon(address _to, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint16 _damage, uint8 _xpPerSec) public onlyOperator returns(uint256 tokenId) {
-        _tokenIdCounter.increment();
         uint256 _tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
 
         dragons[_tokenId] = DragonNFTLib.Dragon({
             gender : _gender,
@@ -137,7 +137,7 @@ contract DragonNFT is ERC721, Ownable {
 
     // 레벨에 따라 필요한 XP를 재설정합니다.
     function setXpToLevelUp(uint8 level, uint256 xpRequired) external onlyOwner {
-        require(level < MAX_LEVEL || level < 1, "DragonNFT : Invalid level");
+        require(level <= MAX_LEVEL && level > 0, "DragonNFT : Invalid level");
         uint256 previousXP = xpToLevelUp[level - 1];
         xpToLevelUp[level - 1] = xpRequired;
         emit DragonLevelXPAdjusted(level, previousXP, xpRequired);
@@ -196,6 +196,10 @@ contract DragonNFT is ERC721, Ownable {
     function addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
         ownedTokensIndex[tokenId] = ownedTokens[to].length;
         ownedTokens[to].push(tokenId);
+    }
+
+    function totalSupply() public view returns(uint256 _totalSupply) {
+        return _tokenIdCounter.current();
     }
 }
 
