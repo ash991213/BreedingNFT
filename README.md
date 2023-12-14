@@ -42,11 +42,11 @@ local에서 모든 함수에 대한 테스트를 마친 후 공개 테스트넷(
 ## TEST
 
 ```bash
-npx hardhat test test/DragonBreedingNFT.test.hardhat.ts
+npx hardhat test
 ```
 
 ## COVERAGE
 
 ```bash
- npx hardhat coverage  --show-stack-traces
+npx hardhat coverage  --show-stack-traces
 ```

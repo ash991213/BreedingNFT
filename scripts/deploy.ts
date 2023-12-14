@@ -8,7 +8,7 @@ async function main() {
 	for (let i = 1; i < maxLevel; i++) {
 		let increaseRate;
 
-		increaseRate = i < 50 ? 1.1 : 1.2; // 레벨 1~50: 1.1배 증가 51~100: 1.2배 증가
+		increaseRate = i < 50 ? 1.1 : 1.2;
 
 		let nextXp = Math.ceil(xpToLevelUp[i - 1] * increaseRate);
 		xpToLevelUp.push(nextXp);

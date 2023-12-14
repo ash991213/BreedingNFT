@@ -27,7 +27,10 @@ contract DragonBreed {
     uint16[] public rarityBasedDamage;
 
     // 교배 관련 이벤트
-    event DragonBred(uint256 _fatherTokenId, uint256 _matherTokenId, uint256 _childTokenId);
+    event DragonBred(uint256 _parent1TokenId, uint256 _parent2TokenId, uint256 _childTokenId);
+
+    // 드래곤 교배 시간 업데이트
+    event LastBreedingTime(uint256 _parent1TokenId, uint256 _parent2TokenId, uint256 _time);
 
     modifier onlyOperator() {
         require(operator.isOperator(msg.sender), "DragonBreedingNFT : msg.sender is no a valid operator");
@@ -111,6 +114,7 @@ contract DragonBreed {
     function _updateLastBreedingTime(uint256 parent1TokenId, uint256 parent2TokenId) private {
         lastBreedingTime[parent1TokenId] = block.timestamp;
         lastBreedingTime[parent2TokenId] = block.timestamp;
+        emit LastBreedingTime(parent1TokenId, parent2TokenId, block.timestamp);
     }
 
     // 드래곤의 마지막 교배 시간을 반환합니다.

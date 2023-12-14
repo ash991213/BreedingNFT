@@ -3,7 +3,7 @@ import { Contract, Signer } from 'ethers';
 import { expect } from 'chai';
 import { time } from '@nomicfoundation/hardhat-network-helpers';
 
-describe('DragonNftTest', function () {
+describe('DragonRearing', function () {
 	let operatorManager: Contract;
 	let dragonNFT: Contract;
 	let dragonRental: Contract;
@@ -242,10 +242,17 @@ describe('DragonNftTest', function () {
 			const requestSentEvent = receiptTxBreed.events.find((e: any) => e.event === 'RequestSent');
 
 			const transactionRandomWords = await testVRFCoordinatorV2Mock.fulfillRandomWords(requestSentEvent.args.requestId, testVRFv2Consumer.address);
-			await transactionRandomWords.wait();
+			const receiptRandomWords = await transactionRandomWords.wait();
+			const timestamp = (await ethers.provider.getBlock(receiptRandomWords.blockNumber)).timestamp;
 
 			const afterOwnersBalance = await dragonNFT.balanceOf(owner.getAddress());
 			const afterOwnersDragon = await dragonNFT.getOwnedTokens(owner.getAddress());
+
+			const parents1LastBreedingTime = await dragonBreed.getLastBreedingTime(ownersDragon[ownersDragon.length - 1]);
+			const parents2LastBreedingTime = await dragonBreed.getLastBreedingTime(userDragon);
+
+			expect(parents1LastBreedingTime).to.be.equal(timestamp);
+			expect(parents2LastBreedingTime).to.be.equal(timestamp);
 
 			expect(beforeOwnersBalance).to.be.equal(afterOwnersBalance - 1);
 			expect(beforeOwnersDragon.length).to.be.equal(afterOwnersDragon.length - 1);

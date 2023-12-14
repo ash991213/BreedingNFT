@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+// * interfaces
 import "../dragonNFT/interface/IDragonNFT.sol";
 import "../operator/interface/IOperator.sol";
 
+// * libraries
 import "./library/DragonRentalLib.sol";
 
 contract DragonRental {

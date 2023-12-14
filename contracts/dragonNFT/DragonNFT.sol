@@ -177,14 +177,6 @@ contract DragonNFT is ERC721, Ownable {
         addTokenToOwnerEnumeration(to, tokenId);
     }
 
-    // function transferFrom(address from, address to, uint256 tokenId) public override {
-    //     super.transferFrom(from, to, tokenId);
-
-    //     // 소유자 변경 처리
-    //     removeTokenFromOwnerEnumeration(from, tokenId);
-    //     addTokenToOwnerEnumeration(to, tokenId);
-    // }
-
     // 소유자의 토큰 목록에서 토큰을 제거합니다.
     function removeTokenFromOwnerEnumeration(address from, uint256 tokenId) private {
         uint256 lastTokenIndex = ownedTokens[from].length - 1;
@@ -206,3 +198,4 @@ contract DragonNFT is ERC721, Ownable {
         ownedTokens[to].push(tokenId);
     }
 }
+
