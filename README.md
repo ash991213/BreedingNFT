@@ -1,5 +1,3 @@
-## Dragon Blockchain Ecosystem
-
 ## Introduction
 
 The Dragon Blockchain Ecosystem is a suite of smart contracts on the Ethereum blockchain, designed for creating, breeding, renting, and interacting with unique Dragon NFTs. This ecosystem utilizes Chainlink VRF for randomization and offers an immersive experience in digital dragon rearing and breeding.
