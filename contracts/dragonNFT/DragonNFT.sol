@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+// * security
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 // * tokens
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 // * accesses
 import "@openzeppelin/contracts/access/Ownable.sol";
+
+// * interfaces
 import "../operator/interface/IOperator.sol";
 
 // * utils
@@ -14,7 +19,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 // * libraries
 import "./library/DragonNFTLib.sol";
 
-contract DragonNFT is ERC721, Ownable {
+contract DragonNFT is ERC721, Ownable, ReentrancyGuard {
     using DragonNFTLib for uint256;
     using Counters for Counters.Counter;
 
@@ -40,9 +45,9 @@ contract DragonNFT is ERC721, Ownable {
     // 레벨업 하는데 필요한 경험치 배열
     uint256[] public xpToLevelUp;
 
-    event NewDragonBorn(uint256 _tokenId, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint16 _damage, uint256 _lastInteracted, uint32 _xpPerSec);
+    event NewDragonBorn(uint256 _tokenId, DragonNFTLib.Gender gender, DragonNFTLib.Rarity rarity, DragonNFTLib.Species specie, uint16 damage, uint256 _lastInteracted, uint32 xpPerSec);
     event DragonExperienceGained(uint256 _tokenId, uint8 _level, uint256 _xp, uint32 _xpToAdd);
-    event DragonLevelUp(uint256 _tokenId, uint8 _level, uint256 _xp, uint16 _damage);
+    event DragonLevelUp(uint256 _tokenId, uint8 _level, uint256 _xp, uint16 damage);
     event DragonLevelXPAdjusted(uint8 level, uint256 previousXP, uint256 newXP);
 
     modifier onlyOperator() {
@@ -59,35 +64,35 @@ contract DragonNFT is ERC721, Ownable {
     }
 
     // 신규 드래곤을 mint하는 함수입니다.
-    function mintNewDragon(address requester, uint256[] memory _randomWords) external onlyOperator {
-        DragonNFTLib.Gender gender = _randomWords[0].determineGender();
-        DragonNFTLib.Rarity rarity = _randomWords[1].determineRarity();
-        DragonNFTLib.Species specie = _randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
-        uint16 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
+    function mintNewDragon(address requester, uint256[] memory randomWords) external onlyOperator {
+        DragonNFTLib.Gender gender = randomWords[0].determineGender();
+        DragonNFTLib.Rarity rarity = randomWords[1].determineRarity();
+        DragonNFTLib.Species specie = randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
+        uint16 damage = randomWords[3].determineDamage(rarity, rarityBasedDamage);
         uint8 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
 
         createDragon(requester, gender, rarity, specie, damage, xpPerSec);
     }
 
     // 드래곤 NFT를 생성합니다.
-    function createDragon(address _to, DragonNFTLib.Gender _gender, DragonNFTLib.Rarity _rarity, DragonNFTLib.Species _specie, uint16 _damage, uint8 _xpPerSec) public onlyOperator returns(uint256 tokenId) {
+    function createDragon(address to, DragonNFTLib.Gender gender, DragonNFTLib.Rarity rarity, DragonNFTLib.Species specie, uint16 damage, uint8 xpPerSec) public onlyOperator nonReentrant returns(uint256 tokenId) {
         uint256 _tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
 
         dragons[_tokenId] = DragonNFTLib.Dragon({
-            gender : _gender,
-            rarity : _rarity,
-            specie : _specie,
+            gender : gender,
+            rarity : rarity,
+            specie : specie,
             level : 1,
             xp : 0,
-            damage : _damage,
+            damage : damage,
             lastInteracted : block.timestamp, 
-            xpPerSec : _xpPerSec
+            xpPerSec : xpPerSec
         });
 
-        _safeMint(_to, _tokenId);
-        addTokenToOwnerEnumeration(_to, _tokenId);
-        emit NewDragonBorn(_tokenId, _gender, _rarity, _specie, _damage, block.timestamp, _xpPerSec);
+        addTokenToOwnerEnumeration(to, _tokenId);
+        _safeMint(to, _tokenId);
+        emit NewDragonBorn(_tokenId, gender, rarity, specie, damage, block.timestamp, xpPerSec);
         return tokenId;
     }
 

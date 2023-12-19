@@ -1,0 +1,42 @@
+strict digraph {
+subgraph cluster_337_IDragonNFT {
+label = "IDragonNFT"
+"337_addExperience" [label="addExperience"]
+"337_getDragonInfo" [label="getDragonInfo"]
+"337_ownerOf" [label="ownerOf"]
+"337_getRarityBasedExperience" [label="getRarityBasedExperience"]
+"337_createDragon" [label="createDragon"]
+"337_getSpeciesCountPerRarity" [label="getSpeciesCountPerRarity"]
+"337_mintNewDragon" [label="mintNewDragon"]
+"337_getOwnedTokens" [label="getOwnedTokens"]
+"337_getRarityBasedDamage" [label="getRarityBasedDamage"]
+"337_setXpToLevelUp" [label="setXpToLevelUp"]
+}subgraph cluster_362_IOperator {
+label = "IOperator"
+"362_isOperator" [label="isOperator"]
+}subgraph cluster_252_DragonRental {
+label = "DragonRental"
+"252_getCurrentlyRentedDragons" [label="getCurrentlyRentedDragons"]
+"252_cancelRental" [label="cancelRental"]
+"252_isRentalActive" [label="isRentalActive"]
+"252_getDragonRental" [label="getDragonRental"]
+"252_constructor" [label="constructor"]
+"252_rentDragon" [label="rentDragon"]
+"252_cancelRental" -> "252_isRentalActive"
+}subgraph cluster_647_DragonNFTLib {
+label = "DragonNFTLib"
+"647_getRarityOffset" [label="getRarityOffset"]
+"647_determineRarity" [label="determineRarity"]
+"647_determineSpecies" [label="determineSpecies"]
+"647_determineExperience" [label="determineExperience"]
+"647_determineGender" [label="determineGender"]
+"647_determineDamage" [label="determineDamage"]
+"647_determineSpecies" -> "647_getRarityOffset"
+}subgraph cluster_solidity {
+label = "[Solidity]"
+"require(bool,string)" 
+"252_rentDragon" -> "require(bool,string)"
+"252_cancelRental" -> "require(bool,string)"
+}"252_cancelRental" -> "362_isOperator"
+"252_rentDragon" -> "337_ownerOf"
+}

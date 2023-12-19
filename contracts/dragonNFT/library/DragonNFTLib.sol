@@ -74,42 +74,42 @@ library DragonNFTLib {
     }
 
     // 랜덤 숫자를 기반으로 희귀도를 결정합니다.
-    function determineRarity(uint256 _randomWords) internal pure returns(Rarity rarity) {
-        return (_randomWords % 2 == 0) ? Rarity.COMMON : Rarity.RARE;
+    function determineRarity(uint256 randomWords) internal pure returns(Rarity rarity) {
+        return (randomWords % 2 == 0) ? Rarity.COMMON : Rarity.RARE;
     }
 
     // 희귀도와 랜덤 숫자를 기반으로 드래곤 종류를 결정합니다.
-    function determineSpecies(uint256 _randomValue, Rarity _rarity, uint8[] memory _speciesCountPerRarity) internal pure returns (Species specie) {
-        uint256 speciesRarityOffset = _getRarityOffset(uint256(_rarity), _speciesCountPerRarity);
-        return Species(speciesRarityOffset + (_randomValue % _speciesCountPerRarity[uint256(_rarity)]));
+    function determineSpecies(uint256 randomValue, Rarity rarity, uint8[] memory speciesCountPerRarity) internal pure returns (Species specie) {
+        uint256 speciesRarityOffset = getRarityOffset(uint256(rarity), speciesCountPerRarity);
+        return Species(speciesRarityOffset + (randomValue % speciesCountPerRarity[uint256(rarity)]));
     }
 
     // 특정 희귀도의 시작 Species 인덱스 구합니다.
-    function _getRarityOffset(uint256 _rarity, uint8[] memory _speciesCountPerRarity) internal pure returns (uint256) {
+    function getRarityOffset(uint256 rarity, uint8[] memory speciesCountPerRarity) internal pure returns (uint256) {
         uint256 offset = 0;
-        for(uint256 i = 0; i < _rarity; i++) {
-            offset += _speciesCountPerRarity[i];
+        for(uint256 i = 0; i < rarity; i++) {
+            offset += speciesCountPerRarity[i];
         }
         return offset;
     }
 
     // 희귀도와 랜덤 숫자를 기반으로 데미지를 결정합니다.
-    function determineDamage(uint256 _randomValue, Rarity _rarity, uint16[] memory _rarityBasedDamage) internal pure returns(uint16) {
+    function determineDamage(uint256 randomValue, Rarity rarity, uint16[] memory rarityBasedDamage) internal pure returns(uint16) {
         uint16 damage;
 
-        if (_rarity == Rarity.COMMON || _rarity == Rarity.RARE) {
-            damage = uint16(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 51));
-        } else if (_rarity == Rarity.EPIC || _rarity == Rarity.UNIQUE) {
-            damage = uint16(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 151));
+        if (rarity == Rarity.COMMON || rarity == Rarity.RARE) {
+            damage = uint16(rarityBasedDamage[uint(rarity)] + (randomValue % 51));
+        } else if (rarity == Rarity.EPIC || rarity == Rarity.UNIQUE) {
+            damage = uint16(rarityBasedDamage[uint(rarity)] + (randomValue % 151));
         } else {
-            damage = uint16(_rarityBasedDamage[uint(_rarity)] + (_randomValue % 301));
+            damage = uint16(rarityBasedDamage[uint(rarity)] + (randomValue % 301));
         }
 
         return damage;
     }
 
     // 희귀도를 기반으로 획득 경험치를 결정합니다.
-    function determineExperience(Rarity _rarity, uint8[] memory _rarityBasedExperience) internal pure returns(uint8 experience) {
-        return _rarityBasedExperience[uint(_rarity)];
+    function determineExperience(Rarity rarity, uint8[] memory rarityBasedExperience) internal pure returns(uint8 experience) {
+        return rarityBasedExperience[uint(rarity)];
     }
 }

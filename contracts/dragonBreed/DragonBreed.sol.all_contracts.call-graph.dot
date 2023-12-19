@@ -1,0 +1,72 @@
+strict digraph {
+subgraph cluster_898_IDragonRental {
+label = "IDragonRental"
+"898_cancelRental" [label="cancelRental"]
+"898_rentDragon" [label="rentDragon"]
+"898_isRentalActive" [label="isRentalActive"]
+"898_getDragonRental" [label="getDragonRental"]
+}subgraph cluster_867_DragonNFTLib {
+label = "DragonNFTLib"
+"867_determineGender" [label="determineGender"]
+"867_determineRarity" [label="determineRarity"]
+"867_getRarityOffset" [label="getRarityOffset"]
+"867_determineExperience" [label="determineExperience"]
+"867_determineSpecies" [label="determineSpecies"]
+"867_determineDamage" [label="determineDamage"]
+"867_determineSpecies" -> "867_getRarityOffset"
+}subgraph cluster_582_IDragonNFT {
+label = "IDragonNFT"
+"582_getOwnedTokens" [label="getOwnedTokens"]
+"582_getRarityBasedExperience" [label="getRarityBasedExperience"]
+"582_ownerOf" [label="ownerOf"]
+"582_createDragon" [label="createDragon"]
+"582_mintNewDragon" [label="mintNewDragon"]
+"582_addExperience" [label="addExperience"]
+"582_getSpeciesCountPerRarity" [label="getSpeciesCountPerRarity"]
+"582_getDragonInfo" [label="getDragonInfo"]
+"582_setXpToLevelUp" [label="setXpToLevelUp"]
+"582_getRarityBasedDamage" [label="getRarityBasedDamage"]
+}subgraph cluster_488_DragonBreed {
+label = "DragonBreed"
+"488__updateLastBreedingTime" [label="_updateLastBreedingTime"]
+"488_constructor" [label="constructor"]
+"488_breedDragons" [label="breedDragons"]
+"488__calculateRentalFee" [label="_calculateRentalFee"]
+"488_distributeBreedingFee" [label="distributeBreedingFee"]
+"488__compareRarities" [label="_compareRarities"]
+"488_getLastBreedingTime" [label="getLastBreedingTime"]
+"488__determineBreedingRarity" [label="_determineBreedingRarity"]
+"488__determineBreedingRarity" -> "488__compareRarities"
+"488_breedDragons" -> "488_onlyOperator"
+"488_breedDragons" -> "488__determineBreedingRarity"
+"488_breedDragons" -> "488__updateLastBreedingTime"
+"488_distributeBreedingFee" -> "488_onlyOperator"
+"488_distributeBreedingFee" -> "488__calculateRentalFee"
+"488_breedDragons" -> "488_nonReentrant"
+}subgraph cluster_923_IOperator {
+label = "IOperator"
+"923_isOperator" [label="isOperator"]
+}subgraph cluster_988_ReentrancyGuard {
+label = "ReentrancyGuard"
+"988__nonReentrantBefore" [label="_nonReentrantBefore"]
+"988__reentrancyGuardEntered" [label="_reentrancyGuardEntered"]
+"988_constructor" [label="constructor"]
+"988__nonReentrantAfter" [label="_nonReentrantAfter"]
+}subgraph cluster_solidity {
+label = "[Solidity]"
+"require(bool,string)" 
+"988__nonReentrantBefore" -> "require(bool,string)"
+}"488_constructor" -> "582_getRarityBasedExperience"
+"488_breedDragons" -> "898_cancelRental"
+"488_breedDragons" -> "582_createDragon"
+"488_breedDragons" -> "867_determineSpecies"
+"488_constructor" -> "582_getSpeciesCountPerRarity"
+"488_breedDragons" -> "867_determineGender"
+"488_breedDragons" -> "867_determineDamage"
+"488_distributeBreedingFee" -> "582_ownerOf"
+"488_breedDragons" -> "867_determineExperience"
+"488__calculateRentalFee" -> "898_getDragonRental"
+"488_constructor" -> "582_getRarityBasedDamage"
+"488__calculateRentalFee" -> "898_isRentalActive"
+"488__compareRarities" -> "582_getDragonInfo"
+}

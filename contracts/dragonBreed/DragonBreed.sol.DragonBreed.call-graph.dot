@@ -1,0 +1,30 @@
+strict digraph {
+subgraph cluster_488_DragonBreed {
+label = "DragonBreed"
+"488__updateLastBreedingTime" [label="_updateLastBreedingTime"]
+"488_constructor" [label="constructor"]
+"488_breedDragons" [label="breedDragons"]
+"488__calculateRentalFee" [label="_calculateRentalFee"]
+"488_distributeBreedingFee" [label="distributeBreedingFee"]
+"488__compareRarities" [label="_compareRarities"]
+"488_getLastBreedingTime" [label="getLastBreedingTime"]
+"488__determineBreedingRarity" [label="_determineBreedingRarity"]
+"488__determineBreedingRarity" -> "488__compareRarities"
+"488_breedDragons" -> "488_onlyOperator"
+"488_breedDragons" -> "488__determineBreedingRarity"
+"488_breedDragons" -> "488__updateLastBreedingTime"
+"488_distributeBreedingFee" -> "488_onlyOperator"
+"488_distributeBreedingFee" -> "488__calculateRentalFee"
+"488_breedDragons" -> "488_nonReentrant"
+}subgraph cluster_988_ReentrancyGuard {
+label = "ReentrancyGuard"
+"988__nonReentrantBefore" [label="_nonReentrantBefore"]
+"988__reentrancyGuardEntered" [label="_reentrancyGuardEntered"]
+"988_constructor" [label="constructor"]
+"988__nonReentrantAfter" [label="_nonReentrantAfter"]
+}subgraph cluster_solidity {
+label = "[Solidity]"
+"require(bool,string)" 
+"988__nonReentrantBefore" -> "require(bool,string)"
+}
+}

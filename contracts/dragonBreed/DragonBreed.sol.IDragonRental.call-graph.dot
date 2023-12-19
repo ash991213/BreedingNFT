@@ -1,0 +1,11 @@
+strict digraph {
+subgraph cluster_898_IDragonRental {
+label = "IDragonRental"
+"898_isRentalActive" [label="isRentalActive"]
+"898_rentDragon" [label="rentDragon"]
+"898_cancelRental" [label="cancelRental"]
+"898_getDragonRental" [label="getDragonRental"]
+}subgraph cluster_solidity {
+label = "[Solidity]"
+}
+}

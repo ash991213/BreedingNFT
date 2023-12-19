@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+// * security
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 // * libraries
 import "./library/DragonBreedLib.sol";
 import "../dragonNFT/library/DragonNFTLib.sol";
@@ -11,10 +14,10 @@ import "../dragonNFT/interface/IDragonNFT.sol";
 import "../dragonRental/interface/IDragonRental.sol";
 import "../operator/interface/IOperator.sol";
 
-contract DragonBreed {
-    IDragonNFT private dragonNft;
-    IDragonRental private dragonRental;
-    IOperator private operator;
+contract DragonBreed is ReentrancyGuard {
+    IDragonNFT private immutable dragonNft;
+    IDragonRental private immutable dragonRental;
+    IOperator private immutable operator;
 
     using DragonNFTLib for uint256;
 
@@ -47,17 +50,17 @@ contract DragonBreed {
     }
 
     // 드래곤을 교배하여 새로운 드래곤을 생성합니다.
-    function breedDragons(address requester, uint256 parent1TokenId, uint256 parent2TokenId, uint256[] memory _randomWords, uint256 _rentedDragonTokenId) external onlyOperator {
-        DragonNFTLib.Gender gender = _randomWords[0].determineGender();
-        DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, _randomWords[1]);
-        DragonNFTLib.Species species = _randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
-        uint16 damage = _randomWords[3].determineDamage(rarity, rarityBasedDamage);
+    function breedDragons(address requester, uint256 parent1TokenId, uint256 parent2TokenId, uint256[] memory randomWords, uint256 rentedDragonTokenId) external onlyOperator nonReentrant {
+        DragonNFTLib.Gender gender = randomWords[0].determineGender();
+        DragonNFTLib.Rarity rarity = _determineBreedingRarity(parent1TokenId, parent2TokenId, randomWords[1]);
+        DragonNFTLib.Species species = randomWords[2].determineSpecies(rarity, speciesCountPerRarity);
+        uint16 damage = randomWords[3].determineDamage(rarity, rarityBasedDamage);
         uint8 xpPerSec = DragonNFTLib.determineExperience(rarity, rarityBasedExperience);
 
-        uint256 tokenId = dragonNft.createDragon(requester, gender, rarity, species, damage, xpPerSec);
         _updateLastBreedingTime(parent1TokenId, parent2TokenId);
+        uint256 tokenId = dragonNft.createDragon(requester, gender, rarity, species, damage, xpPerSec);
 
-        dragonRental.cancelRental(_rentedDragonTokenId);
+        dragonRental.cancelRental(rentedDragonTokenId);
         emit DragonBred(parent1TokenId, parent2TokenId, tokenId);
     }
 

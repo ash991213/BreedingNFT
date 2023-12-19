@@ -1,0 +1,84 @@
+# 테스트할 모드 선택 property, assertion, overflow, exploration, optimization
+testMode: 'assertion'
+# 스마트 컨트랙트가 파괴되었는지 여부를 확인합니다.
+testDestruction: false
+# 속성 트랜잭션의 발신자입니다. 기본적으로 컨트랙트 배포자와 동일합니다.
+psender: '0x10000'
+# 확인하고자 하는 Boolean 함수의 접두어입니다.
+prefix: 'echidna_'
+# 속성이 실패하는 가스 비용 한도입니다.
+propMaxGas: 8000030
+# 가스 한도입니다. 실패를 유발하지 않지만 시퀀스를 종료합니다.
+testMaxGas: 8000030
+# 최대 가스 가격입니다.
+maxGasprice: 0
+# 실행할 테스트 시퀀스의 수입니다.
+testLimit: 50000
+# 어떤 속성이 실패하고 줄어들면 Echidna가 종료됩니다.
+stopOnFail: false
+# 함수의 최대 가스 비용 분석을 수행합니다. (실험 단계)
+estimateGas: false
+# 테스트 시퀀스에 있는 트랜잭션 수입니다.
+seqLen: 100
+# 실패한 시퀀스를 줄이는 데 들이는 노력을 결정합니다.
+shrinkLimit: 5000
+# 커버리지 가이드 테스트를 제어합니다.
+coverage: false
+# 출력 형식입니다. (Text 또는 JSON)
+format: 'text'
+# 컨트랙트 자체의 주소입니다.
+contractAddr: '0x00a329c0648769a73afac7f9381e08fb43dbea72'
+# 컨트랙트 배포자의 주소입니다.
+deployer: '0x30000'
+# 트랜잭션이 시작될 수 있는 주소 집합입니다.
+sender: ['0x10000', '0x20000', '0x30000']
+# 주소의 기본 잔액입니다.
+balanceAddr: 0xffffffff
+# balanceAddr을 덮어쓰는 컨트랙트 주소의 잔액입니다.
+balanceContract: 0
+# 배포된 컨트랙트의 최대 코드 크기입니다. (default 24576, per EIP-170)
+codeSize: 0x6000
+# solc에 대한 특별한 인수입니다.
+solcArgs: ''
+# solc에 대한 라이브러리입니다.
+solcLibs: []
+# crytic에 대한 특별한 인수입니다.
+cryticArgs: []
+# 덜 자세한 출력을 생성합니다.
+quiet: false
+# 블록체인을 일부 데이터로 초기화합니다.
+initialize: null
+# 일부 주소에 사전 배포된 컨트랙트로 블록체인을 초기화합니다.
+deployContracts: []
+# 일부 주소에 바이트코드로 블록체인을 초기화합니다.
+deployBytecodes: []
+# 모든 컨트랙트에 대한 퍼징을 활성하거나 비활성화합니다.
+allContracts: false
+# 테스트 타임앙웃 설정을 제어합니다.
+timeout: null
+# Echidna의 내부 사전 대 무작위 값을 사용하는 빈도를 제어합니다.
+dictFreq: 0.40
+# 생성된 트랜잭션 사이의 최대 시간입니다.
+maxTimeDelay: 604800
+# 생성된 트랜잭션 사이의 경과된 블록의 최대 수입니다.
+maxBlockDelay: 60480
+# 필터링할 메소드 목록입니다.
+filterFunctions: []
+# 기본적으로 filterFunctions의 메소드를 블랙리스트에 올립니다.
+filterBlacklist: true
+# FFI HEVM 치트코드를 활성화 또는 비활성화합니다.
+allowFFI: false
+# 코퍼스를 저장할 디렉토리입니다.
+corpusDir: null
+# 커버리지 보고서를 저장할 파일 형식 목록입니다.
+coverageFormats: ['txt', 'html', 'lcov']
+# 코퍼스 변형을 위한 상수입니다. (실험 단계)
+mutConsts: [1, 1, 1, 1]
+# payable 함수에 보낼 최대 값입니다.
+maxValue: 100000000000000000000 # 100 eth
+# RPC를 통해 컨트랙트를 가져올 URL입니다.
+rpcUrl: null
+# RPC를 통해 가져올 때 사용할 블록 번호입니다.
+rpcBlock: null
+# 작업자 수입니다.
+workers: 1

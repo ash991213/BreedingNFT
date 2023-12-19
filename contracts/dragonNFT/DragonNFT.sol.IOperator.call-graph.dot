@@ -1,0 +1,8 @@
+strict digraph {
+subgraph cluster_1025_IOperator {
+label = "IOperator"
+"1025_isOperator" [label="isOperator"]
+}subgraph cluster_solidity {
+label = "[Solidity]"
+}
+}

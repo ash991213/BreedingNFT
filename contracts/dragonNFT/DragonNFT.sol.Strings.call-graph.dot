@@ -1,0 +1,23 @@
+strict digraph {
+subgraph cluster_2946_Strings {
+label = "Strings"
+"2946_slitherConstructorConstantVariables" [label="slitherConstructorConstantVariables"]
+"2946_toString" [label="toString"]
+"2946_toHexString" [label="toHexString"]
+"2946_equal" [label="equal"]
+"2946_toHexString" -> "2946_toHexString"
+"2946_toString" -> "2946_toString"
+}subgraph cluster_solidity {
+label = "[Solidity]"
+"keccak256(bytes)" 
+"mstore8(uint256,uint256)" 
+"abi.encodePacked()" 
+"byte(uint256,uint256)" 
+"require(bool,string)" 
+"2946_equal" -> "keccak256(bytes)"
+"2946_toHexString" -> "require(bool,string)"
+"2946_toString" -> "mstore8(uint256,uint256)"
+"2946_toString" -> "byte(uint256,uint256)"
+"2946_toString" -> "abi.encodePacked()"
+}
+}

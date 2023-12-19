@@ -18,17 +18,17 @@ contract OperatorManager is Ownable, IOperator {
         operatorMap[msg.sender] = true;
     }
 
-    function addOperator(address _account) external onlyOwner {
-        operatorMap[_account] = true;
-        emit AddOperator(_account);
+    function addOperator(address account) external onlyOwner {
+        operatorMap[account] = true;
+        emit AddOperator(account);
     }
 
-    function removeOperator(address _account) external onlyOwner {
-        operatorMap[_account] = false;
-        emit RemoveOperator(_account);
+    function removeOperator(address account) external onlyOwner {
+        operatorMap[account] = false;
+        emit RemoveOperator(account);
     }
 
-    function isOperator(address _account) external view override returns (bool) {
-        return operatorMap[_account];
+    function isOperator(address account) external view override returns (bool) {
+        return operatorMap[account];
     }
 }

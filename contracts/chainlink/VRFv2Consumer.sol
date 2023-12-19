@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 // * chainlink VRF
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
@@ -15,27 +17,26 @@ import "../dragonNFT/interface/IDragonNFT.sol";
 import "../dragonRental/interface/IDragonRental.sol";
 import "../dragonBreed/interface/IDragonBreed.sol";
 
-contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
-    IDragonNFT private dragonNft;
-    IDragonRental private dragonRental;
-    IDragonBreed private dragonBreed;
-
-    VRFCoordinatorV2Interface COORDINATOR;
+contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner, ReentrancyGuard {
+    IDragonNFT private immutable dragonNft;
+    IDragonRental private immutable dragonRental;
+    IDragonBreed private immutable dragonBreed;
+    VRFCoordinatorV2Interface immutable coordinator;
 
     // Chainlink VRF 구독 ID
-    uint64 immutable s_subscriptionId;
+    uint64 immutable subscriptionId;
 
     // 특정 Chainlink VRF 노드의 고유 식별자
-    bytes32 constant keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+    bytes32 constant KEY_HASH = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
 
     // 콜백 함수 가스 한도
-    uint32 callbackGasLimit = 3000000;
+    uint32 constant CALLBACK_GASLIMIT = 3_000_000;
 
     // Request Confirm 횟수 -> 높일 시 더 안정적으로 랜덤값을 가져오지만 속도가 오래걸림 평균 - 3
-    uint16 requestConfirmations = 3;
+    uint16 constant REQUEST_CONFIRMATIONS = 3;
 
     // 요청할 랜덤 단어 수
-    uint32 numWords = 4;
+    uint32 constant NUM_WORDS = 4;
 
     // 드래곤 발행 수수료
     uint256 public constant NFT_MINT_FEE = 1 ether;
@@ -63,7 +64,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     }
 
     // requestId에 대한 상태 저장 매핑
-    mapping(uint256 => RequestStatus) public s_requests;
+    mapping(uint256 => RequestStatus) public requests;
 
     // Request Id에 연결된 부모 드래곤 tokenId
     mapping(uint256 => DragonBreedingPair) public breedingRequests;
@@ -77,9 +78,9 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     /**
      * HARDCODED FOR SEPOLIA COORDINATOR: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
      */
-    constructor(uint64 subscriptionId, address _dragonNft, address _dragonRental, address _dragonBreed) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) {
-        COORDINATOR = VRFCoordinatorV2Interface(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625);
-        s_subscriptionId = subscriptionId;
+    constructor(uint64 _subscriptionId, address _dragonNft, address _dragonRental, address _dragonBreed) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) {
+        coordinator = VRFCoordinatorV2Interface(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625);
+        subscriptionId = _subscriptionId;
         dragonNft = IDragonNFT(_dragonNft);
         dragonRental = IDragonRental(_dragonRental);
         dragonBreed = IDragonBreed(_dragonBreed);
@@ -128,65 +129,66 @@ contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
     }
 
     // Chainlink VRF 랜덤값을 요청하는 함수입니다.
-    function requestRandomWordsForPurpose(RequestPurpose _purpose, uint256 _parent1TokenId, uint256 _parent2TokenId, uint256 _rentedDragonTokenId) internal returns(uint256 requestId) {
-        require(address(COORDINATOR) != address(0), "DragonBreed: Invalid VRFCoordinator address");
+    function requestRandomWordsForPurpose(RequestPurpose purpose, uint256 parent1TokenId, uint256 parent2TokenId, uint256 rentedDragonTokenId) internal nonReentrant returns(uint256 requestId) {
+        require(address(coordinator) != address(0), "DragonBreed: Invalid VRFCoordinator address");
 
-        requestId = COORDINATOR.requestRandomWords(
-            keyHash,
-            s_subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            numWords
+        requestId = coordinator.requestRandomWords(
+            KEY_HASH,
+            subscriptionId,
+            REQUEST_CONFIRMATIONS,
+            CALLBACK_GASLIMIT,
+            NUM_WORDS
         );
 
         require(requestId > 0, "DragonBreed: Failed to request random words");
 
-        s_requests[requestId] = RequestStatus({
+        requests[requestId] = RequestStatus({
             randomWords: new uint256[](0),
             exists: true,
-            requestPurpose : _purpose,
-            rentedDragonTokenId : _rentedDragonTokenId,
+            requestPurpose : purpose,
+            rentedDragonTokenId : rentedDragonTokenId,
             requester : msg.sender,
             fulfilled: false
         });
 
-        if (_purpose == RequestPurpose.BREEDING) {
+        if (purpose == RequestPurpose.BREEDING) {
             breedingRequests[requestId] = DragonBreedingPair({
-                parent1TokenId : _parent1TokenId,
-                parent2TokenId : _parent2TokenId
+                parent1TokenId : parent1TokenId,
+                parent2TokenId : parent2TokenId
             });
         }
 
-        emit RequestSent(requestId, numWords, _purpose, _rentedDragonTokenId);
+        emit RequestSent(requestId, NUM_WORDS, purpose, rentedDragonTokenId);
         return requestId;
     }
 
     // Chainlink VRF를 통해 랜덤 숫자를 받아 새로운 드래곤 NFT를 발행합니다.
-    function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
-        require(s_requests[_requestId].exists, "request not found");
-        s_requests[_requestId].fulfilled = true;
-        s_requests[_requestId].randomWords = _randomWords;
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override nonReentrant {
+        require(requests[requestId].exists, "request not found");
+        requests[requestId].fulfilled = true;
+        requests[requestId].randomWords = randomWords;
 
-        if(s_requests[_requestId].requestPurpose == RequestPurpose.MINTING) {
-            dragonNft.mintNewDragon(s_requests[_requestId].requester, _randomWords);
-        } else if(s_requests[_requestId].requestPurpose == RequestPurpose.BREEDING) {
-            dragonBreed.breedDragons(s_requests[_requestId].requester, breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId, _randomWords, s_requests[_requestId].rentedDragonTokenId);
-            (address owner, uint256 rentalFee) = dragonBreed.distributeBreedingFee(breedingRequests[_requestId].parent1TokenId, breedingRequests[_requestId].parent2TokenId);
+        if(requests[requestId].requestPurpose == RequestPurpose.MINTING) {
+            dragonNft.mintNewDragon(requests[requestId].requester, randomWords);
+        } else if(requests[requestId].requestPurpose == RequestPurpose.BREEDING) {
+            dragonBreed.breedDragons(requests[requestId].requester, breedingRequests[requestId].parent1TokenId, breedingRequests[requestId].parent2TokenId, randomWords, requests[requestId].rentedDragonTokenId);
+            (address renter, uint256 rentalFee) = dragonBreed.distributeBreedingFee(breedingRequests[requestId].parent1TokenId, breedingRequests[requestId].parent2TokenId);
+            address contractOwner = owner();
 
-            // 수수료를 추적합니다.
             uint256 fee = DragonBreedLib.BREEDING_FEE - rentalFee;
-            pendingWithdrawals[owner] += fee;
+            pendingWithdrawals[renter] += rentalFee;
+            pendingWithdrawals[contractOwner] += fee;
         }
-        emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].requestPurpose);
+        emit RequestFulfilled(requestId, randomWords, requests[requestId].requestPurpose);
     }
 
-    // 주어진 주소로 수수료를 전송합니다.
-    function _distributeFee(address owner, uint256 rentalFee) private {
-        payable(owner).transfer(DragonBreedLib.BREEDING_FEE - rentalFee);
+    // 대여 수수료를 확인합니다.
+    function getFeeAmount() external view returns(uint256 amount) {
+        return pendingWithdrawals[msg.sender];
     }
 
-    // 스마트 컨트랙트에 저장된 이더리움을 스마트 컨트랙트 소유자에게 전송합니다.
-    function withdraw() external {
+    // 드래곤 대여자들이 수수료를 요청하는 함수입니다.
+    function withdrawFee() external {
         uint256 amount = pendingWithdrawals[msg.sender];
         require(amount > 0, "No funds available");
 

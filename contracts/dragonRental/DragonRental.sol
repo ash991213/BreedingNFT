@@ -10,7 +10,7 @@ import "./library/DragonRentalLib.sol";
 
 contract DragonRental {
     IOperator private immutable operator;
-    IDragonNFT private dragonNft;
+    IDragonNFT private immutable dragonNft;
     
     // 드래곤 대여 정보를 저장하는 매핑
     mapping(uint256 => DragonRentalLib.DragonRental) public dragonRentals;

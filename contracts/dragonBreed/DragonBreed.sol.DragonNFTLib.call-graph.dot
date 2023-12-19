@@ -1,0 +1,14 @@
+strict digraph {
+subgraph cluster_867_DragonNFTLib {
+label = "DragonNFTLib"
+"867_determineGender" [label="determineGender"]
+"867_determineRarity" [label="determineRarity"]
+"867_getRarityOffset" [label="getRarityOffset"]
+"867_determineExperience" [label="determineExperience"]
+"867_determineSpecies" [label="determineSpecies"]
+"867_determineDamage" [label="determineDamage"]
+"867_determineSpecies" -> "867_getRarityOffset"
+}subgraph cluster_solidity {
+label = "[Solidity]"
+}
+}

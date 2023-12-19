@@ -1,0 +1,17 @@
+strict digraph {
+subgraph cluster_252_DragonRental {
+label = "DragonRental"
+"252_getCurrentlyRentedDragons" [label="getCurrentlyRentedDragons"]
+"252_cancelRental" [label="cancelRental"]
+"252_isRentalActive" [label="isRentalActive"]
+"252_getDragonRental" [label="getDragonRental"]
+"252_constructor" [label="constructor"]
+"252_rentDragon" [label="rentDragon"]
+"252_cancelRental" -> "252_isRentalActive"
+}subgraph cluster_solidity {
+label = "[Solidity]"
+"require(bool,string)" 
+"252_rentDragon" -> "require(bool,string)"
+"252_cancelRental" -> "require(bool,string)"
+}
+}
