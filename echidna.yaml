@@ -41,9 +41,9 @@ codeSize: 0x6000
 # solc에 대한 특별한 인수입니다.
 solcArgs: ''
 # solc에 대한 라이브러리입니다.
-solcLibs: []
+# solcLibs: ['']
 # crytic에 대한 특별한 인수입니다.
-cryticArgs: []
+cryticArgs: ['--solc-remaps', '@=node_modules/@']
 # 덜 자세한 출력을 생성합니다.
 quiet: false
 # 블록체인을 일부 데이터로 초기화합니다.
@@ -69,9 +69,11 @@ filterBlacklist: true
 # FFI HEVM 치트코드를 활성화 또는 비활성화합니다.
 allowFFI: false
 # 코퍼스를 저장할 디렉토리입니다.
-corpusDir: null
+# corpusDir: './corpus'
+# 커버리지 유무
+# coverage: false
 # 커버리지 보고서를 저장할 파일 형식 목록입니다.
-coverageFormats: ['txt', 'html', 'lcov']
+# coverageFormats: ['txt', 'html', 'lcov']
 # 코퍼스 변형을 위한 상수입니다. (실험 단계)
 mutConsts: [1, 1, 1, 1]
 # payable 함수에 보낼 최대 값입니다.
