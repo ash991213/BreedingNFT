@@ -1,69 +1,47 @@
-## Introduction
+## 소개
 
-The Dragon Blockchain Ecosystem is a suite of smart contracts on the Ethereum blockchain, designed for creating, breeding, renting, and interacting with unique Dragon NFTs. This ecosystem utilizes Chainlink VRF for randomization and offers an immersive experience in digital dragon rearing and breeding.
+드래곤 블록체인 에코시스템은 이더리움 블록체인 위에 구축된 스마트 계약 모음으로, 독특한 드래곤 NFT를 생성, 교배, 임대 및 상호 작용하기 위해 설계되었습니다. 이 시스템은 Chainlink VRF를 무작위성을 위해 활용하며 디지털 드래곤 육성 및 교배에 몰입할 수 있는 경험을 제공합니다.
 
-## Contracts Overview
+### 스마트 컨트랙트 개요
 
-DragonNFT: Manages the creation and attributes of Dragon NFTs.
+- DragonNFT: 드래곤 NFT의 생성 및 속성 관리
 
-DragonBreed: Facilitates the breeding of dragons to create new NFTs with unique attributes.
+- DragonBreed: 드래곤을 교배하여 독특한 속성을 가진 새로운 NFT를 생성
 
-DragonRental: Allows users to rent their Dragon NFTs to others.
+- DragonRental: 사용자가 자신의 드래곤 NFT를 다른 사람에게 임대할 수 있도록 함
 
-VRFv2Consumer: Integrates Chainlink VRF for random number generation, crucial for the minting and breeding processes.
+- VRFv2Consumer: 민팅 및 교배 과정에서 중요한 무작위 랜덤 숫자 생성을 위해 Chainlink VRF 통합
 
-## Features
+### 특징
 
-Minting of Dragon NFTs: Create unique dragon NFTs with randomly assigned attributes.
+- 드래곤 NFT 민팅: 무작위로 할당된 속성을 가진 독특한 드래곤 NFT 생성.
 
-Breeding Mechanism: Breed two dragons to produce a new dragon with combined traits.
+- 교배 메커니즘: 두 드래곤을 교배하여 결합된 특성을 가진 새 드래곤 생산.
 
-Rental System: Rent out dragons for others to use in breeding or other activities.
+- 임대 시스템: 교배나 다른 활동에 사용하기 위해 드래곤을 임대.
 
-Chainlink VRF Integration: Ensures fair and unpredictable outcomes in minting and breeding.
+- Chainlink VRF 통합: 민팅과 교배에서 공정하고 예측할 수 없는 결과 보장.
 
-Reward Distribution: Participants in the ecosystem (such as breeders) can receive rewards in the form of Ethereum.
+- 보상 분배: 에코시스템 참여자들(예: 교배자)은 이더리움 형태로 보상을 받을 수 있음.
 
-## Requirements
+### 요구 사항
 
-Solidity ^0.8.20: Smart contract programming language.
+1. Solidity ^0.8.20
 
-Ethereum Blockchain: For contract deployment and execution.
+2. 이더리움 블록체인
 
-Chainlink VRF: For verifiable randomness in the minting and breeding process.
+3. Chainlink VRF
 
-OpenZeppelin Contracts: For secure, standard contract implementations, especially for ERC721 tokens.
+4. OpenZeppelin SmartContract
 
-## Usage
+### 사용 방법
 
-Deploy all contracts on an Ethereum network. you can use scripts/deploy.ts
+이더리움 네트워크에 모든 계약을 배포합니다. scripts/deploy.ts를 사용할 수 있습니다. 
 
-Initialize DragonNFT, DragonBreed, DragonRental, and VRFv2Consumer with appropriate parameters and addresses.
+DragonNFT, DragonBreed, DragonRental, VRFv2Consumer를 적절한 매개변수와 주소로 초기화합니다.
 
-### Minting Dragons
+### 테스트
 
-Call mintNewDragon in VRFv2Consumer to create a new Dragon NFT with random attributes.
+통합 테스트: 계약이 예상대로 함께 작동하는지 확인합니다.
 
-Pay the specified minting fee in ETH.
-
-### Breeding Dragons
-
-Use breedDragons in DragonBreed to breed two dragons.
-
-Ensure the necessary conditions (like cooldown period and ownership) are met.
-
-### Renting Dragons
-
-Dragons can be rented out for breeding or other purposes through DragonRental.
-
-### Managing Rewards
-
-Rewards are distributed to dragon owners based on participation in breeding or rental activities.
-
-Withdraw rewards using the withdraw function in VRFv2Consumer.
-
-## Testing
-
-Integration Tests: Ensure that the contracts work together as expected.
-
-Simulation Tests: Mimic user interactions and breeding scenarios to test the overall workflow.
+시뮬레이션 테스트: 사용자 상호 작용 및 교배 시나리오를 모방하여 전체 워크플로를 테스트합니다.
