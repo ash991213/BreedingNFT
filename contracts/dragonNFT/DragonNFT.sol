@@ -45,7 +45,7 @@ contract DragonNFT is ERC721, Ownable, ReentrancyGuard {
     // 레벨업 하는데 필요한 경험치 배열
     uint256[] public xpToLevelUp;
 
-    event NewDragonBorn(uint256 _tokenId, DragonNFTLib.Gender gender, DragonNFTLib.Rarity rarity, DragonNFTLib.Species specie, uint16 damage, uint256 _lastInteracted, uint32 xpPerSec);
+    event NewDragonBorn(uint256 _tokenId, DragonNFTLib.Gender gender, DragonNFTLib.Rarity rarity, DragonNFTLib.Species specie, uint16 damage, uint256 lastInteracted, uint32 xpPerSec);
     event DragonExperienceGained(uint256 _tokenId, uint8 _level, uint256 _xp, uint32 _xpToAdd);
     event DragonLevelUp(uint256 _tokenId, uint8 _level, uint256 _xp, uint16 damage);
     event DragonLevelXPAdjusted(uint8 level, uint256 previousXP, uint256 newXP);

@@ -27,7 +27,7 @@ async function main() {
 	await dragonRental.deployed();
 
 	const DragonBreed = await ethers.getContractFactory('DragonBreed');
-	const dragonBreed = await DragonBreed.deploy(dragonNFT.address, dragonRental.address, operatorManager.address);
+	const dragonBreed = await DragonBreed.deploy(operatorManager.address, dragonNFT.address, dragonRental.address);
 	await dragonBreed.deployed();
 
 	const VRFv2Consumer = await ethers.getContractFactory('VRFv2Consumer');

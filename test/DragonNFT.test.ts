@@ -47,12 +47,12 @@ describe('DragonNFT Test', async () => {
 		const createEvents = createReceipt.events.find((e: any) => e.event === 'NewDragonBorn');
 		const createTimestamp = (await ethers.provider.getBlock(createReceipt.blockNumber)).timestamp;
 
-		expect(createEvents.args._gender).to.equal(0);
-		expect(createEvents.args._rarity).to.equal(0);
-		expect(createEvents.args._specie).to.equal(0);
-		expect(createEvents.args._damage).to.equal(50);
-		expect(createEvents.args._xpPerSec).to.equal(10);
-		expect(createEvents.args._lastInteracted).to.equal(createTimestamp);
+		expect(createEvents.args.gender).to.equal(0);
+		expect(createEvents.args.rarity).to.equal(0);
+		expect(createEvents.args.specie).to.equal(0);
+		expect(createEvents.args.damage).to.equal(50);
+		expect(createEvents.args.xpPerSec).to.equal(10);
+		expect(createEvents.args.lastInteracted).to.equal(createTimestamp);
 
 		const ownersBalance = await dragonNFT.balanceOf(owner.getAddress());
 		const [ownersDragon] = await dragonNFT.getOwnedTokens(owner.getAddress());
