@@ -24,9 +24,7 @@ const config: HardhatUserConfig = {
 		},
 	},
 	etherscan: {
-		// yarn hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>
 		apiKey: {
-			// npx hardhat verify --list-networks
 			mainnet: process.env.ETHERSCAN_API_KEY || '',
 			sepolia: process.env.ETHERSCAN_API_KEY || '',
 			polygon: process.env.ETHERSCAN_API_KEY || '',
@@ -38,7 +36,7 @@ const config: HardhatUserConfig = {
 		currency: 'USD',
 		outputFile: 'gas-report.txt',
 		noColors: true,
-		// coinmarketcap: process.env.COINMARKETCAP_API_KEY,
+		coinmarketcap: process.env.COINMARKETCAP_API_KEY,
 	},
 	solidity: {
 		version: '0.8.20',

@@ -1,8 +1,0 @@
-strict digraph {
-subgraph cluster_1233_DragonRentalLib {
-label = "DragonRentalLib"
-"1233_slitherConstructorConstantVariables" [label="slitherConstructorConstantVariables"]
-}subgraph cluster_solidity {
-label = "[Solidity]"
-}
-}

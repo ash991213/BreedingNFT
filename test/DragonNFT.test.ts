@@ -123,7 +123,7 @@ describe('DragonNFT Test', async () => {
 		expect(dragonExperienceGainedEvent.args._tokenId).to.be.equal(userDragon);
 		expect(dragonExperienceGainedEvent.args._xp).to.be.equal(0);
 		expect(dragonExperienceGainedEvent.args._level).to.be.equal(dragonLevel);
-		// ? 103번째 줄에서 드래곤을 발행하고 다른 테스트가 순차적으로 진행됨에 따라 1~10초 정도 약간의 시간차가 발생할 수 있음 따라서 조건에 dragon.xpPerSec * 10을 추가함
+		// * 103번째 줄에서 드래곤을 발행하고 다른 테스트가 순차적으로 진행됨에 따라 1~10초 정도 약간의 시간차가 발생할 수 있음 따라서 조건에 dragon.xpPerSec * 10을 추가함
 		expect(dragonExperienceGainedEvent.args._xpToAdd).to.satisfy((num: number) => num >= xpForOneHour && num < xpForOneHour + dragon.xpPerSec * 10);
 	});
 

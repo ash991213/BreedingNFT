@@ -1,8 +1,0 @@
-strict digraph {
-subgraph cluster_923_IOperator {
-label = "IOperator"
-"923_isOperator" [label="isOperator"]
-}subgraph cluster_solidity {
-label = "[Solidity]"
-}
-}

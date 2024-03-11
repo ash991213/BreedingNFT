@@ -1,12 +1,33 @@
-node_modules
-.env
-coverage
-coverage.json
-typechain
-typechain-types
-package-lock.json
-.vscode
+# Dependencies
+/node_modules
 
-# Hardhat files
-cache
-artifacts
+# Environment Variables
+.env
+
+# Coverage Reports
+/coverage
+/coverage.json
+
+# TypeChain Artifacts
+/typechain
+/typechain-types
+
+# Package Files
+/package-lock.json
+
+# Editor Settings
+/.vscode
+
+# Hardhat Build Artifacts
+/cache
+/artifacts
+
+# Crytic Compile Output
+/crytic-export
+
+# Dot Files for Contracts
+contracts/**/*.dot
+
+# Slither Test Result
+test-results.json
+testMatrix.json
